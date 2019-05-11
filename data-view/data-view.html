@@ -1,0 +1,226 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<!-- see: https://github.com/bwu-dart/bwu_datagrid/tree/master/lib -->
+<!-- TODO: sort, filter, select, delete-->
+
+<dom-module id="data-view">
+<template>
+  <style>
+    table {
+      width: 100%;
+      max-width: 100%;
+      margin-bottom: 20px;
+      border-collapse: collapse;
+      width: 100%;
+      padding-top: 10px;
+      font-size: 14px;
+      color: #333;
+      font-family: Calibri, Arial
+    }
+    table>tbody>tr:hover>td, table>tbody>tr:hover>th, table>tbody>tr.active>td, table>tbody>tr.active>th {
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    table>thead>tr>th, table>tbody>tr>th, table>tfoot>tr>th, table>thead>tr>td, table>tbody>tr>td, table>tfoot>tr>td {
+      padding: 5px 8px;
+      line-height: 1.42857143;
+      border-top: 1px solid #ddd;
+      text-align: left;
+    }
+    table th {
+      font-weight: normal;
+      padding: 8px !important;
+    }
+    table>thead {
+      background: #4285f4;
+      color: #fff;
+      text-transform: uppercase;
+      text-align: center
+    }
+  </style>
+
+  <table>
+
+    <thead>
+      <tr style="cursor: pointer;">
+
+          <th style="cursor:pointer;min-width: 20px;" title="дугаар/чек-бокс">
+            <span on-tap="{{clickCheckHeader}}">#</span>
+            <x-check class="check-group{{ {'open': revealCheck } }}"
+              editing="{{ true }}"
+              value="{{ selectAll }}"
+              on-selected="{{ selectAllRows }}" style="margin-left: 15px;"></x-check>
+          </th>
+
+
+          <!-- бусад талбарууд -->
+          <th template repeat="{{header}}" on-tap="{{ sort }}" data-field="{{f}}" title="{{f}}" >
+
+            <template if="{{sortField==f}}">
+              <i class='glyphicon glyphicon-sort-by-alphabet{{alt}}'></i>
+            </template>
+            <!-- монгол текст -->
+            <template if="{{ data.labels.containsKey(f) }}">
+              {{data.labels[f]}}
+            </template>
+            <!-- талбарын англи нэр -->
+            <template if="{{ !data.labels.containsKey(f) }}">
+              {{f}}
+            </template>
+          </th>
+
+          <!-- талбар сонгох товч -->
+          <th template if="{{ isHR }}" width=5 on-tap="{{showFieldsDlg}}" style="cursor:pointer">
+            <span>...</span>
+          </th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr template repeat="{{r in data.rs | enumerate }}"
+          on-tap="{{open}}" data-msg="{{r.index}}"
+          class="{{ {'active': r.index==data.index} }}"
+          style="cursor: pointer;" {{test()}}>
+
+          <td on-tap="{{ selectOneRow }}" style="padding: 0">
+            <rown class="rown-group{{ {'open': revealCheck } }}">
+              {{ rowNumber(r.index) }}</rown>
+            <x-check class="check-group{{ {'open': revealCheck } }}"
+              editing="{{ true }}"
+              row = "{{ rowNumber(r.index) }}"
+              on-selected="{{ selectOneRow }}"
+              on-created="{{ checkBoxCreated }}"></x-check>
+          </td>
+          
+          <td template repeat="{{ f in header }}" class="{{f == special && stringfy(f, r.value) == 'тийм'}}">
+            {{ stringfy(f, r.value) }}
+          </td>
+      </tr>
+    </tbody>
+  </table>
+
+</template>
+
+<script>
+ (function() {
+      'use strict';
+      
+      Polymer({
+        is: 'data-view',
+
+        properties: {
+          header: {
+            type: Array,
+            value: function() { return []; },
+            observe: "_headerChanged"
+          },
+
+          data: {
+            type: Array,
+            value: function() { return []; },
+            observe: "_dataChanged"
+          },
+
+          sort: {
+
+          },
+
+          selectedRows: {
+            type: Array,
+            value: function() { retrurn []; },
+            observe: "_onSelectedRowsChanged"
+          }
+        },
+
+        attached: function() {
+          // хүснэгт үүсэх үеийн анхны утгуудыг оноож байна
+          checkList.clear();
+          selectAll = false;
+
+          data.limit = 25;
+          if (data.empty && !data.loading) {
+            data.find();
+          }
+        },
+
+        ready: function() {
+          
+          if (useCheckbox) {
+            window.onKeyDown.listen((e) {
+              if (e.keyCode == KeyCode.ESC) {
+                revealCheck = false;
+              }
+            });
+          }
+        },
+
+        // жагсаалтыг эрэмбэлэх
+        sort: function(e) {
+          e.preventDefault();
+          if (data == null) {
+            return;
+          }
+
+          String field = target.attributes['data-field'];
+
+          if (sortField == field) {
+            sortAsc = !sortAsc;
+          } else {
+            sortField = field;
+            sortAsc = true;
+          }
+
+          if (sortAsc) {
+            alt = '';
+          } else {
+            alt = '-alt';
+          }
+
+          // do actual sort
+          data.sort.clear(); // sort() функцээр зөвхөн нэг талбараар эрэмбэлнэ
+          if (sortAsc) {
+            data.sort.add(field);
+          } else {
+            data.sort.add("-${field}");
+          }
+
+          data.find();
+        },
+
+        selectAll: function(e) {
+          // TODO: select all rows
+        },
+
+        open: function(e) {
+          e.preventDefault();
+
+          this.fire('open', target.attributes['data-msg']);
+        },
+
+        /// rownumber/checkbox
+        clickCheckHeader: function(Event e, var detail, Element target) {
+          e.preventDefault();
+          e.stopPropagation();
+          if (useCheckbox) revealCheck = !revealCheck;
+        },
+
+        /// select/deselect single row
+        selectOneRow: function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+         
+        },
+
+        /// checkbox нь сонгогдсон байгаа мөрүүдийг устгах
+        delete: function() {
+          if (window.confirm("Устгах уу?")) {
+            // TODO: delete selected rows
+            this.fire('delete');
+          }
+        }
+
+      });
+ })();
+
+</script>
+</dom-module>

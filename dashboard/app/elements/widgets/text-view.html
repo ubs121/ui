@@ -1,0 +1,29 @@
+
+<!-- widget for displaying text -->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../widget-behavior.html">
+
+<dom-module id="text-view">
+<template>
+
+	<p>{{label}}: {{text}} </p>
+
+</template>
+
+<script>
+(function() {
+  'use strict';
+  
+  Polymer({
+    is: 'text-view',
+    behaviors: [WidgetBehavior],
+
+    _dataChanged: function(e) {
+    	console.log("text-view data changed !");
+    	console.log(this.data);
+    }
+  });
+})();
+</script>
+</dom-module>

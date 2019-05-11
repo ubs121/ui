@@ -1,0 +1,38 @@
+{
+  "name": "br-select-box",
+  "version": "1.0.6",
+  "authors": [
+    "cbfranca <cleidsonbf@gmail.com>",
+    "marcelo-ribeiro <marceloribeiromidia@gmail.com>"
+  ],
+  "description": "Modal built with polymer",
+  "main": "br-modal.html",
+  "keywords": [
+    "webcomponents",
+    "polymer",
+    "bedrock",
+    "modal"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bedrock-base": "~1.0.0",
+    "br-icons": "~1.0.0"
+  },
+  "homepage": "https://github.com/bed-rock/br-select-box",
+  "_release": "1.0.6",
+  "_resolution": {
+    "type": "version",
+    "tag": "1.0.6",
+    "commit": "f44155b9b5ac2228255d2515b318330b8c16c57a"
+  },
+  "_source": "git://github.com/bed-rock/br-select-box.git",
+  "_target": "~1.0.0",
+  "_originalSource": "br-select-box"
+}

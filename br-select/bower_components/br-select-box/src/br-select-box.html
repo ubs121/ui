@@ -1,0 +1,70 @@
+<link rel="import" type="html" href="../../br-header/src/br-header.html">
+
+<dom-module id="br-select-box">
+
+  <link rel="import" type="css" href="../dist/css/br-select-box.min.css">
+
+  <template>
+
+    <div class="content">
+
+      <br-header class="controls">
+        <div class="group__left">
+          <button class="header--btn" on-click="_close">
+            <br-icons icon="br-icons:arrow-back"></br-icons>
+          </button>
+        </div>
+        <div class="group__right">
+          <template id="dom-if" if="{{checkButton}}">
+            <button class="header--btn" on-click="_close">
+              <br-icons icon="br-icons:check"></br-icons>
+            </button>
+          </template>
+        </div>
+      </br-header>
+
+      <content></content>
+    </div>
+
+  </template>
+
+  <script>
+    Polymer({
+      is: 'br-select-box',
+
+      properties: {
+
+        checkButton: {
+          type: Boolean,
+          default: false
+        }
+
+      },
+
+      ready: function(){
+
+        var selectBox = Polymer.dom(this);
+
+        document.addEventListener('click', function() {
+          if (selectBox.classList.contains('open') && selectBox.classList !== null)
+            selectBox.classList.remove('open');
+        }, false);
+
+        var content = Polymer.dom(this.root).querySelector('.content');
+        content.addEventListener('click', function(event) {
+          event.stopPropagation();
+        }, false);
+
+      },
+
+      _open: function(){
+        Polymer.dom(this).classList.add('open');
+      },
+      _close: function(){
+        Polymer.dom(this).classList.remove('open');
+      }
+
+    });
+  </script>
+
+</dom-module>

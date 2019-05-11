@@ -1,0 +1,267 @@
+<!--
+ Collection of records, used to share records and the current selection between views.
+ @see firebase-collection
+ @see Lovefield
+-->
+
+<link rel="import" href="../polymer/polymer.html">
+<script src="bower_components/lovefield/dist/lovefield.min.js"></script>
+
+<dom-module id="lerp-dataset">
+<script>
+"use strict";
+
+class LerpDataset {
+
+  beforeRegister() {
+    this.is = "lerp-dataset";
+    this.properties = {
+      // lerp context
+      context: Object,
+
+      // collection or model name
+      name: { type: String, value: ''},
+
+      // автоматаар ачаалах эсэх
+      auto: Boolean,
+
+      // fulltext хайлт хийх эсэх
+      fulltext: Boolean,
+
+      // шүүх талбарууд, энгийн форматаар
+      project: { type: Array, value: [], observer: "projectChanged"},
+
+      // идэвхитэй обектын байрлал буюу заагч
+      index: {type:Number, value: -1},
+    }
+  }
+
+  created() {
+    // model нэр шалгах
+    if (name == '') {
+      throw new StateError('name хоосон байж болохгүй !');
+    }
+
+    this.db = lf.schema.create('lerp', 1);
+    this.table = this.db.getSchema().table(this.name);
+  }
+
+  ready() {
+    // auto=true бол өгөгдлийг ачаалах
+    if (auto && context != null) {
+      load();
+    }
+  }
+
+  contextChanged() {
+    // record-set үүсэх үед contex хоосон байж болно, тиймээс өгөгдлийг энд дахин ачаалав
+    if (auto && (data == null || data.length == 0)) {
+      load();
+    }
+  }
+
+  // серверээс өгөгдөл ачаалах
+  Future load() {
+    return find();
+  }
+
+  // sync with server
+  commit() {
+
+  }
+
+  // шинэ бичлэг нэмэх
+  add() {
+
+  }
+
+  // delete current object
+  Future remove() {
+
+  }
+
+  // заасан байрлал руу шууд үсрэх
+  moveTo(int i) {
+    setCurrent(i);
+  }
+
+
+  /// previous object
+  prev() {
+    this.setCurrent(--index);
+  }
+
+  /// move to next object
+  next() {
+    this.setCurrent(++index);
+  }
+
+  /***
+   *   Хуудаслалтын функцүүд
+   */
+  int calcPageCount() {
+    int pageCount = total ~/ limit;
+    int rem = total % limit;
+    if (rem > 0) {
+      pageCount++;
+    }
+    return pageCount;
+  }
+
+  /// previous object
+  Future prevPage() {
+    if (page > 0) {
+      page = page - 1;
+    } else {
+      page = calcPageCount() - 1;
+    }
+
+    return find();
+  }
+
+  /// move to next page
+  Future nextPage() {
+    if (page < calcPageCount() - 1) {
+      page = page + 1;
+    }
+    /*else {
+      page = 0;
+    }*/
+
+    return find();
+  }
+
+  // заасан хуудас руу очих
+  Future movePage(int p) {
+    page = p;
+    return find();
+  }
+
+  buildQuery(String query) {
+    page = 0;
+
+    if (searchText.isNotEmpty) {
+      q.clear(); // өмнөх бүх нөхцөлийг цэвэрлэх
+
+    }
+    if (query == null || query == "") {
+      q.clear();
+      xquery.clear();
+
+      return;
+    }
+
+    // =, >, <, ~ нөхцөлүүдээр хайх
+    if (query.contains("=") || query.contains("<") || query.contains(">")) {
+      // TODO: or нөхцөл тооцох str.split(";")
+
+      // and холбоосоор хуваах
+      List filters = query.split(",");
+
+      for (String f in filters) {
+        parseClause(f);
+      }
+
+    } else { // tag-аар хайх
+      String s = query.toLowerCase();
+
+      if (s.endsWith("*")) {
+        q['_tags'] = {
+          r'$regex': "${s.substring(0, s.length - 1)}.*"
+        };
+      } else {
+        q['_tags'] = {
+          r'$all': s.split(" ")
+        };
+      }
+    }
+    xquery.addAll(q);
+  }
+
+
+  // нөхцөл задлах: field=value, field=value*, field>value, field<value хэлбэрийн нөхцөлүүд байна
+  parseClause(String s) {
+    int i = 0;
+    // skip spaces
+    while (i < s.length && (s[i] == ' ' || s[i] == '\t')) i++;
+
+    // field name
+    StringBuffer sbField = new StringBuffer();
+    while (i < s.length && s[i] != ' ' && s[i] != '=' && s[i] != '>' && s[i] != '<') {
+      sbField.write(s[i]);
+      i++;
+    }
+
+    // skip spaces
+    while (i < s.length && (s[i] == ' ' || s[i] == '\t')) i++;
+
+    if (i < s.length) {
+      String s1 = s.substring(i);
+      // TODO: q дотор өмнө нь утга байгаа бол залгах
+      if (s1.startsWith("<=")) {
+        q[sbField.toString()] = {
+          r'$lte': s1.substring(2).trim()
+        };
+      } else if (s1.startsWith("<")) {
+        q[sbField.toString()] = {
+          r'$lt': s1.substring(1).trim()
+        };
+      } else if (s1.startsWith(">=")) {
+        q[sbField.toString()] = {
+          r'$gte': s1.substring(2).trim()
+        };
+      } else if (s1.startsWith(">")) {
+        q[sbField.toString()] = {
+          r'$gt': s1.substring(1).trim()
+        };
+      } else {
+        // =
+        q[sbField.toString()] = parseVal(s1.substring(1).trim());
+      }
+    }
+  },
+
+  // хайлтын утгыг mongo нөхцөл болгон хувиргах
+  dynamic parseVal(String v) {
+    // тоо
+    if (48 <= v.codeUnitAt(0) && v.codeUnitAt(0) <= 57) {
+      try {
+        return num.parse(v);
+      } catch (e) {
+      }
+    }
+
+    // хашилттай текст
+    if (v.startsWith("\"") || v.startsWith("'")) {
+      String tmp = v.substring(1);
+      v = tmp.substring(0, tmp.length - 1);
+      return v;
+    }
+
+    // массив
+    if (v.startsWith("[")) {
+      return {
+        r'$in': JSON.decode(v)
+      };
+    }
+
+    // * wildcard
+    if (v.endsWith("*")) {
+      return {
+        r'$regex': "${v.substring(0, v.length - 1)}.*",
+        r'$options': 'i'
+      };
+    }
+
+    return {
+      r'$regex': v,
+      r'$options': 'i'
+    }
+  }
+
+}
+
+
+Polymer(LerpDataset);
+</script>
+</dom-module>

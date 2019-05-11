@@ -1,0 +1,110 @@
+
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="x-pagination">
+<style>
+  ul {
+      list-style-type: none;
+  }
+
+  li {
+      display: inline-block;
+      padding: 2px;
+      margin: 2px;
+      border: 1px solid silver;
+      border-radius: 3px;
+  }
+
+  li.active {
+      background: blue;
+  }
+</style>
+
+<template>
+    <template if="{{total > size}}">
+        <ul class="pagination" style="clear:left">
+            <template repeat="{{i in indexes}}">
+                <li class="{{ {'active': current==i } }}" data-msg="{{i}}" on-tap="movePage">
+                    {{i + 1}}
+                </li>
+            </template>
+        </ul>
+    </template>
+</template>
+
+<script>
+  Polymer({
+    is: 'x-pagination',
+
+    properties: {
+        total: { type: Number, value: 0, observer: 'totalChanged' },
+        size: { type: Number, value: 1},
+        current: { type: Number, value: 0}
+    },
+
+    created: function() {
+        this.indexes = [];
+    },
+
+    ready: function() {
+        this._calc();
+    },
+
+    _calc: function() {
+        var pageCount = this.total / this.size;
+        /*var rem = this.total % this.size;
+        if (rem > 0) {
+          pageCount++;
+        }*/
+        this.current = 0;
+        this.indexes = [];
+
+        // FIXME: i in range 0,pageCount
+        for (var i=0; i<pageCount; i++) {
+          this.indexes.push(i);
+        }
+    },
+
+    totalChanged: function(old) {
+        this._calc();
+    },
+
+    sizeChanged: function(old) {
+        this._calc();
+    },
+
+    movePage: function(e, detail, target) {
+        e.preventDefault();
+        e.stopPropagation();
+
+        this.current = e.target.getAttribute('data-msg');
+        this.fire("page", this.current);
+    },
+
+    prevPages(Event e, var detail, Element target) {
+      cancelEvent(e);
+
+      startPage = startPage - showPages;
+      if (startPage < 0) {
+        startPage = 0;
+      }
+
+      this._calc();
+
+    },
+
+    nextPages(Event e, var detail, Element target) {
+      cancelEvent(e);
+
+      startPage = startPage + showPages;
+      if (startPage > pageCount) {
+        startPage = pageCount - showPages;
+      }
+
+      this._calc();
+
+    }
+
+  });
+</script>
+</dom-module>

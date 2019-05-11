@@ -1,0 +1,77 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="survey-run">
+<template>
+    <h4 class="modal-title"><strong>{{ name }}</strong></h4>
+
+  <template repeat="{{ q in questions | enumerate }}">
+    <div>
+      <div><b>{{q.index + 1}}.{{ q.value['асуулт'] }}</b></div>
+      
+      <div style="margin-left: 10px;">
+        <!-- m2o: radio buttons -->
+        <template if="{{ q.value['төрөл']=='m2o' }}">
+          <template repeat="{{ a in calc(q.value['хариулт']) | enumerate }}">
+            <input id="ans_{{a.index}}_{{q.value['_id']}}"
+              type="radio"
+              qid="{{ q.value['_id'] }}"
+              name="{{ q.value['асуулт'] }}"
+              data-msg="{{a.value}}">
+            <label style="cursor:pointer" for="ans_{{a.index}}_{{q.value['_id']}}">{{a.value}}</label>
+          </template>
+        </template>
+
+        <!-- m2m: check boxes -->
+        <template if="{{ q.value['төрөл']=='m2m' }}">
+          <template repeat="{{ a in calc(q.value['хариулт']) | enumerate }}">
+            <p>
+              <input id="ans_{{a.index}}_{{q.value['_id']}}"
+                type="checkbox"
+                qid="{{ q.value['_id'] }}"
+                name="{{ q.value['асуулт'] }}"
+                data-msg="{{a.value}}">
+              <label style="cursor:pointer" for="ans_{{a.index}}_{{q.value['_id']}}">{{a.value}}</label>
+            </p>
+          </template>
+        </template>
+
+        <!-- rating -->
+        <template if="{{ q.value['төрөл']=='rating' }}">
+          <p><x-ratings count="5" qid="{{ q.value['_id'] }}"></x-ratings></p>
+        </template>
+
+        <!-- fill -->
+        <template if="{{ q.value['төрөл']=='fill' }}">
+          <textarea style="width:100%" qid="{{ q.value['_id'] }}"></textarea>
+        </template>
+      </div>
+    </div>
+  </template>
+
+    <div horizontal layout style="margin-top: 20px;">
+      <paper-button raised on-tap="{{ finish }}" style="background:#0f9d58;color:white;">Дуусгах</paper-button>
+    </div>
+
+</template>
+
+<script>
+	(function() {
+    'use strict';
+
+    Polymer({
+      is: 'survey-run',
+
+      properties: {
+        data: {
+          type: Object,
+          value: function() {
+            return {}
+          },
+          observer: "_dataChanged"
+        }
+      },
+    });
+
+  })();
+</script>
+</dom-module>

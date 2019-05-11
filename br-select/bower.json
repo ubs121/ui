@@ -1,0 +1,31 @@
+{
+  "name": "br-select",
+  "version": "1.0.4",
+  "homepage": "https://github.com/bed-rock/br-selectbox",
+  "authors": [
+    "cbfranca <cleidsonbf@gmail.com>",
+    "marcelo-ribeiro <marceloribeiromidia@gmail.com>"
+  ],
+  "description": "A mobile-friendly select box web component with search and multi select built with polymer",
+  "main": "br-selectbox.html",
+  "keywords": [
+    "webcomponents",
+    "polymer",
+    "select",
+    "select2",
+    "bedrock"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bedrock-base": "~1.0.0",
+    "br-select-box": "~1.0.0",
+    "br-icons": "~1.0.0"
+  }
+}

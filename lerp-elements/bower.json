@@ -1,0 +1,32 @@
+{
+  "name": "lerp-elements",
+  "version": "0.0.1",
+  "authors": [
+    "ubs121 <ubs121@gmail.com>"
+  ],
+  "description": "An element providing a solution to no problem in particular.",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "lerp",
+    "erp"
+  ],
+  "main": "lerp-elements.html",
+  "license": "LICENSE.txt",
+  "homepage": "https://github.com/ubs121/lerp-elements/",
+  "ignore": [
+    "/.*",
+    "/test/",
+    "/demo/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.1.2",
+    "iron-elements": "PolymerElements/iron-elements#^1.0.4",
+    "lovefield": "lovefield#master"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "web-component-tester": "*"
+  }
+}

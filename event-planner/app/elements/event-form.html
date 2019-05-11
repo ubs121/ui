@@ -1,0 +1,182 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/iron-input/iron-input.html">
+<link rel="import" href="../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<link rel="import" href="../bower_components/paper-input/paper-input-container.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<dom-module id="event-form">
+  <template>
+    <style include="shared-styles"></style>
+    <style>
+    :host {
+      display: block;
+    }
+    </style>
+    <paper-card>
+      <form id="eventForm">
+        <div class="card-content">
+          <paper-input id="name" label="Event name" value="{{data.name}}" required="true" autofocus auto-validate error-message="Event name is required!">
+          </paper-input>
+
+          <paper-input-container>
+            <label for="type">Event type...</label>
+            <input is="iron-input" id="type" list="evtTypes" bind-value="{{data.type}}" autocomplete required auto-validate>
+            <paper-input-error>Event type is required!</paper-input-error>
+          </paper-input-container>
+
+          <datalist id="evtTypes">
+            <option>birthday</option>
+            <option>conference</option>
+            <option>wedding</option>
+            <option>concert</option>
+            <option>book club</option>
+            <option>game</option>
+          </datalist>
+
+          <div>
+            <h3>When?</h3>
+
+            <div class="layout horizontal">
+              <paper-input type="date" label="Start date and time" always-float-label value="{{data.startDate}}" required="true" auto-validate error-message="invalid date!"></paper-input>
+
+              <paper-input type="time" value="{{data.startTime}}"></paper-input>
+            </div>
+
+            <div class="layout horizontal">
+              <paper-input type="date" label="End date and time" always-float-label value="{{data.endDate}}"></paper-input>
+              <paper-input type="time" value="{{data.endTime}}"></paper-input>
+            </div>
+          </div>
+
+          <div>
+            <h3>Where?</h3>
+            <paper-input id="addr" label="Location" value="{{data.addr}}" required autocomplete auto-validate error-message="is required!">
+              <paper-icon-button suffix icon="room" on-click="locate" title="Get current location"></paper-icon-button>
+            </paper-input>
+          </div>
+
+          <div>
+            <h3>People?</h3>
+            <paper-input label="Host/Organizer" value="{{data.host}}" type="text" required auto-validate error-message="is required!" autocomplete onblur="validate"></paper-input>
+
+            <paper-input label="Attendees" value="{{data.attendees}}"></paper-input>
+
+            <paper-textarea label="Optional message to guests..." value="{{data.message}}"></paper-textarea>
+          </div>
+        </div>
+        <div class="card-actions">
+          <paper-button icon="arrow-back" on-click="cancel">back</paper-button>
+          <paper-button icon="save" type="button" on-click="save">save</paper-button>
+        </div>
+      </form>
+    </paper-card>
+  </template>
+
+  <script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      is: 'event-form',
+      properties: {
+        data: {
+          type: Object,
+          value: function() {
+            return {}
+          },
+          observer: "_dataChanged",
+          notify: true
+        }
+      },
+
+      created: function() {
+        console.log("event-form is created ");
+      },
+
+      _dataChanged: function(e) {
+        console.log("data changed " + this.data.id);
+      },
+
+      validate: function(e) {
+        // validate required inputs
+        var inps = this.querySelectorAll("*[required]");
+        for (var i = 0; i < inps.length; i++) {
+          if (!inps[i].validate()) {
+            inps[i].focus();
+            return false;
+          }
+        }
+        return true;
+      },
+
+      save: function(e) {
+        e.preventDefault();
+        // validation
+        if (this.validate()) {
+          this.fire("save");
+          this.back(e);
+        }
+      },
+
+      cancel: function(e) {
+        e.preventDefault();
+        this.back(e);
+      },
+
+      back: function(e) {
+        app.route = "events";
+        app.scrollPageToTop();
+      },
+
+      setLocation: function(pos) {
+        var geoPoint = pos.coords.latitude + "," + pos.coords.longitude;
+
+        // FIXME: this not working !
+        //this.data.addr = geoPoint;
+        this.querySelector("#addr").value = geoPoint;
+
+
+        // TODO: Show on the google map
+        /*
+        var img_url = "http://maps.googleapis.com/maps/api/staticmap?center=" +
+          geoPoint + "&zoom=14&size=400x300&sensor=false";
+        this.$.mapImg.src = img_url;
+        */
+      },
+
+      locationError: function(error) {
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            app.$.toast.text = "Denied the request for Geolocation. Maybe, ask the user in a more polite way?";
+            break;
+          case error.POSITION_UNAVAILABLE:
+            app.$.toast.text = "Location information is unavailable.";
+            break;
+          case error.TIMEOUT:
+            app.$.toast.text = "The request to get location timed out.";
+            break;
+          case error.UNKNOWN_ERROR:
+            app.$.toast.text = "An unknown error occurred :(";
+            break;
+        }
+        app.$.toast.show();
+      },
+
+
+      
+      // get current location
+      locate: function(e) {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(this.setLocation.bind(this), this.locationError.bind(this));
+        } else {
+          app.$.toast.text = "Geolocation is not supported by this browser.";
+          app.$.toast.show();
+        }
+      },
+
+      
+
+    });
+  })();
+  </script>
+</dom-module>

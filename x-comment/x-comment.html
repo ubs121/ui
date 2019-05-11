@@ -1,0 +1,120 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="x-comment">
+<style>
+  ul {
+    list-style: none;
+    padding: 10px 0 10px 0;
+    margin: 0;
+    background-color: white;
+  }
+
+  li {
+    padding: 5px 0 5px 0;
+    cursor: pointer;
+  }
+
+  li:hover {
+    background: #ddd;
+  }
+</style>
+
+<template>
+    <div>
+      <a href="#" on-click="{{toggle}}">{{rs.length}} коммент</a>
+      <i class="glyphicon glyphicon-chevron-down" style="height: 5px;opacity: .7;"></i>
+    </div>
+
+    <div id="body" style="display:none; margin-top:10px;">
+      <input on-keyUp="{{keyUp}}" value={{inputStr}} class='form-control' type='text' autofocus/>
+
+      <template if="{{rs.length > 0}}">
+        <ul>
+          <template repeat="{{r in rs}}">
+            <li class='comment'>
+              <div class="small">
+                <strong>{{r['User']}}</strong>
+                <span style="color:gray">{{r['Date']}}</span>
+              </div>
+              <p class="small">{{r['Text']}}</p>
+            </li>
+          </template>
+        </ul>
+      </template>
+
+    </div>
+
+</template>
+
+
+<script>
+Polymer({
+  is: "x-comment",
+
+  properties: {
+    @published User ctx;
+    @published List rs = toObservable([]);
+    @observable String inputStr = '';
+  },
+
+  Element toggleArrow;
+  DivElement body;
+
+  created: function() {
+
+  },
+
+  ready: function() {
+    body = $["body"];
+
+    toggleArrow = shadowRoot.querySelector(".glyphicon");
+  },
+
+  /// toggle comment
+  toggle: function(e, detail) {
+    e.preventDefault();
+
+    if (body.style.display == 'none') {
+      toggleArrow.classes.remove("glyphicon-chevron-down");
+      toggleArrow.classes.add("glyphicon-chevron-up");
+      body.style.display = 'block';
+    } else {
+      toggleArrow.classes.remove("glyphicon-chevron-up");
+      toggleArrow.classes.add("glyphicon-chevron-down");
+      body.style.display = 'none';
+    }
+
+  },
+
+  /// ENTER key
+  keyUp: function(e, detail) {
+    e.preventDefault();
+
+    switch (e.keyCode) {
+      case KeyCode.ENTER:
+        String strDate = new DateTime.now().toString();
+        // коммент обект үүсгэх
+        Map r = {
+          'Date': strDate.substring(0, 19),
+          'Text': inputStr
+        };
+        if (ctx!=null) {
+          r['User'] = ctx.id;
+        }
+        rs.insert(0, r);
+
+        inputStr = '';
+
+        // шинэ комментийг дээд контрол руу мэдээлэх
+        fire(new CustomEvent('comment', detail: r));
+        break;
+    }
+
+  }
+
+
+}
+
+</script>
+
+</dom-module>

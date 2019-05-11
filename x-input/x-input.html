@@ -1,0 +1,133 @@
+<!-- x-input -->
+<polymer-element name="x-input">
+
+<style>
+  :host {display: block; width: 100%}
+  paper-input-decorator {width: 100%;padding: 8px 0 0;font-size: 13px;font-family: calibri, Arial; color: #333}
+  paper-input-decorator input{height: 17px; color: #333 !important;margin-top: 0 !important;}
+  paper-input-decorator::shadow .label-text, paper-input-decorator.invalid::shadow .floated-label .label-text {font-size: 12px; color: #4285f4}
+  paper-input-decorator::shadow .input-body {height: 21px;}
+  input:invalid {color: #d34336 !important}
+  input[type=text]:invalid{color: #333 !important}
+  paper-input-decorator::shadow .error-icon {display: none;}
+  paper-autogrow-textarea {width: 100% !important; margin: 1px 0 !important}
+  @media print {
+    paper-input-decorator::shadow .label-text, paper-input-decorator.invalid::shadow .floated-label .label-text {color: #000 !important}
+  }
+</style>
+
+<template>
+
+  <template if="{{!autogrow}}">
+
+    <paper-input-decorator floatingLabel label="[[label]]" error="{{msg}}" disabled="{{disabled}}" labelVisible="true" isInvalid="{{isinvalid}}">
+      <input is="core-input" type="{{type}}" value="{{value}}" min="{{min}}" max="{{max}}" step="{{step}}" on-change="{{onChanged}}" maxlength="{{maxlength}}"
+          on-keypress="{{onKeyPressed}}" name="{{id}}" id="{{id}}" pattern="{{pattern}}" title="{{ type == 'password' ? '' : value}}" style="{{style1}}" readonly?="{{!editing || disabled}}">
+    </paper-input-decorator>
+    <template if="{{text != ''}}">
+      <div style="margin-top: -10px;font-size: 12px;color: #888;">{{text}}</div>
+    </template>
+  </template>
+
+  <template if="{{autogrow}}">
+    <paper-input-decorator floatingLabel label="[[label]]" error="{{msg}}" disabled="{{disabled}}" labelVisible="true" isInvalid="{{isinvalid}}">
+      <paper-autogrow-textarea>
+          <textarea required="{{required}}" on-change="{{onChanged}}" on-keypress="{{onKeyPressed}}" name="{{id}}" id="{{id}}"
+              style="{{style1}}" readonly?="{{!editing || disabled}}" value="{{value}}"></textarea>
+      </paper-autogrow-textarea>
+    </paper-input-decorator>
+  </template>
+</template>
+
+</polymer-element>
+
+/**
+ * талбар
+ *
+ */
+@CustomTag("x-input")
+class XInput extends PolymerElement {
+  @published bool editing = false;
+  @published String label = '';
+  @published String type = 'text';
+  @published String text = '';
+  @published var value;
+  @published var value2;
+  @published bool required = false;
+  @published bool keyPressing = true;
+  @published String min = "";
+  @published String max = "";
+  @published String maxlength = "";
+  @published String placeHolder = "";
+  @published String inputTitle = "";
+  @published String style1 = ""; // input ийн style
+  @published String style2 = ""; // p ийн style
+  @published String pattern = "";
+  @published String msg = "";
+  @published String step = "";
+  @published bool disabled = false;
+  @published bool isinvalid = false;
+  @published bool autogrow = false;
+
+  // internal id
+  @observable String id = new DateTime.now().millisecondsSinceEpoch.toString();
+
+  XInput.created() : super.created();
+
+  attached() {
+    super.attached();
+
+    if (type == "date" || type == "time" || type == "number") {
+      PaperInputDecorator el = shadowRoot.querySelector('paper-input-decorator');
+      el.labelVisible = false;
+    }
+  }
+
+  onChanged(Event e, var detail, Node target) {
+    e.preventDefault();
+    e.stopPropagation();
+//    formatNumber();
+    fire('change', detail: value);
+  }
+  onKeyPressed(Event e, var detail, var target){
+    var bar = target.value;
+    if(keyPressing){
+      fire('keypressed', detail: value);
+    } else {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  }
+
+//  value2Changed() {
+//    valueChanged();
+//  }
+
+  valueChanged() {
+    isinvalid = (required && (value == null || value == ""));
+//    formatNumber();
+    PaperInputDecorator el = shadowRoot.querySelector('paper-input-decorator');
+    el.updateLabelVisibility(value.toString());
+  }
+
+//  editingChanged(){
+//    formatNumber();
+//  }
+
+  formatNumber(){
+
+    print("value ${value}");
+
+    value2 = toObservable(value);
+    print("value2 ${value2} - type ${type}");
+
+    if(value2 != null && value2 != "" && type=="number"){
+      value2 = Utils.numberFormatNumber.format(double.parse(value2.toString()));
+      print("value2 ${value2}");
+    }
+  }
+
+  requiredChanged() {
+    isinvalid = (required && (value == null || value == ""));
+  }
+}

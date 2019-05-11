@@ -1,0 +1,71 @@
+<!--
+ Заасан table элементийн өгөгдлийг excel рүү гаргана
+ -->
+<dom-module id="excel-button">
+<template>
+
+  <paper-button title="Excel export" on-tap="{{export}}">
+    <core-icon icon="launch"></core-icon><content></content>
+  </paper-button>
+
+</template>
+
+<script>
+"use strict";
+
+class ExcelButton extends HTMLButtonElement {
+  beforeRegister() {
+    this.is = "excel-button";
+    this.properties: {
+      source: { type: String, observer: '_sourceChanged'}
+    }
+  }
+
+  created() {
+    this.addEventListener('tap', _export);
+  }
+
+  _export() {
+    if (this.source || this.source.nodeType == 0) {
+      return "ERROR: Empty data ...";
+    }
+
+     String data = `
+     <html xmlns:o="urn:schemas-microsoft-com:office:office"
+           xmlns:x="urn:schemas-microsoft-com:office:excel"
+           xmlns="http://www.w3.org/TR/REC-html40">
+       <head>
+         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+         <meta name="ProgId" content="Excel.Sheet" />
+         <meta name="Generator" content="Microsoft Excel 11" />
+       </head>
+       <body>
+          ${this.source.outerHtml.toString()}
+       </body>
+     </html>
+     `;
+
+     let a =  Object.create(HTMLAnchorElement.prototype)
+     a.href = `data:application/vnd.ms-excel,${(Uri.encodeComponent(data))}`;
+
+     if (this.source.name) {
+       a.download = `${this.source.name}.xls`;
+     } else {
+       a.download = 'untitled.xls';
+     }
+     //trigger the function
+     a.click();
+  }
+
+  _sourceChanged() {
+    if (this.source) {
+      // TODO: дотор нь өгөгдөл байгаа эсэхийг шалгах
+      this.disabled = false;
+    } else {
+      this.disabled = true;
+    }
+  }
+}
+Polymer(ExcelButton);
+</script>
+</dom-module>

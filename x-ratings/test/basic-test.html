@@ -1,0 +1,32 @@
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <script src="../../web-component-tester/browser.js"></script>
+
+    <!-- Step 1: import the element to test -->
+    <link rel="import" href="../x-ratings.html">
+  </head>
+  <body>
+
+    <!-- You can use the document as a place to set up your fixtures. -->
+    <x-ratings></x-ratings>
+
+    <script>
+      var myEl = document.querySelector('x-ratings');
+
+      suite('<x-ratings>', function() {
+
+        test('defines the "count" property', function() {
+          assert.equal(myEl.count, 5);
+        });
+
+      });
+    </script>
+
+  </body>
+</html>

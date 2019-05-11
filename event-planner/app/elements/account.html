@@ -1,0 +1,135 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../bower_components/paper-input/paper-textarea.html">
+<dom-module id="account-form">
+  <template>
+    <style include="shared-styles"></style>
+    <style>
+    :host {
+      display: block;
+    }
+    
+    paper-card .card-actions {
+      border-top: 1px solid #e8e8e8;
+      margin-top: 20px;
+      padding: 5px 16px;
+    }
+    </style>
+    <paper-card>
+      <h2 class="page-title">Account</h2>
+
+      <div class="card-content">
+        <template is="dom-if" if="{{!editing}}">
+          <p>Name: {{data.name}}</p>
+          <address>Email: {{data.email}}</address>
+          <p>{{data.notes}}</p>
+      
+          <div class="card-actions">
+            <paper-button on-click="edit">edit</paper-button>
+            <paper-button on-click="goHome">back to events</paper-button>
+          </div>
+        </template>
+      
+        <template is="dom-if" if="{{editing}}">
+          <paper-input label="Name" value="{{data.name}}" required autofocus autocomplete auto-validate error-message="Name is required!"></paper-input>
+      
+          <paper-input label="Email" type="email" value="{{data.email}}" required auto-validate error-message="Email is required!" autocomplete></paper-input>
+      
+          <paper-input label="Password" type="password" value="{{data.password}}" required auto-validate error-message="At least 6 character!" minlength="6" auto-validate></paper-input>
+      
+          <paper-textarea label="Notes" value="{{data.note}}"></paper-textarea>
+      
+          <div class="card-actions">
+            <paper-button on-click="cancel">cancel</paper-button>
+            <paper-button on-click="save">save</paper-button>
+          </div>
+        </template>
+      </div>
+    </paper-card>
+  </template>
+
+  <script>
+  (function() {
+    'use strict';
+
+    Polymer({
+      is: 'account-form',
+
+      properties: {
+        editing: {
+          type: Boolean,
+          value: false
+        },
+        data: {
+          type: Object,
+          value: function() {
+            return {}
+          },
+          observer: "_dataChanged"
+        }
+      },
+
+      created: function() {
+
+      },
+
+      ready: function() {
+        if (localStorage.account) {
+          this.data = JSON.parse(localStorage.account);
+        }
+      },
+
+      _dataChanged: function(e) {
+        console.log("data changed");
+      },
+
+      edit: function(e) {
+        e.preventDefault();
+        this.editing = true;
+      },
+
+      validate: function(e) {
+        // validate required inputs
+        var inps = this.querySelectorAll("*[required]");
+        for (var i = 0; i < inps.length; i++) {
+          if (!inps[i].validate()) {
+            inps[i].focus();
+            return false;
+          }
+        }
+
+        return true;
+      },
+
+      save: function(e) {
+        e.preventDefault();
+        console.log(this.data);
+
+        // validation
+        if (this.validate()) {
+          localStorage.setItem("account", JSON.stringify(this.data));
+          this.editing = false;
+
+          app.$.toast.text = "Successfully saved!";
+          app.$.toast.show();
+        }
+      },
+
+      cancel: function(e) {
+        e.preventDefault();
+        this.editing = false;
+      },
+
+      goHome: function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        app.route = "events";
+        app.scrollPageToTop();
+      }
+
+    });
+
+  })();
+  </script>
+</dom-module>

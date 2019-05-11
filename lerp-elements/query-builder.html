@@ -1,0 +1,172 @@
+<meta charset="utf-8">
+
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="query-builder">
+<style>
+    :host {
+        position: relative;
+        display: inline-block;
+        border: 1px solid #ccc;
+    }
+
+    input {
+        font-size: inherit;
+        width: 100%;
+        border: none;
+        padding: 0;
+        background-color: transparent;
+    }
+
+    input:focus {
+        outline: none;
+    }
+
+    input#hint {
+        display: inline-block;
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0.7;
+    }
+
+    input#input {
+        position: relative;
+    }
+
+    span#measure {
+        position: absolute;
+        top: -9999px;
+        width: auto;
+        font: -webkit-small-control;
+        font-size: inherit;
+    }
+</style>
+
+<template>
+
+    <span id="measure">{{input}}</span>
+    <input id="hint" type="text" disabled value="{{hint}}">
+    <input id="input" type="text" on-input="{{inputHandler}}" on-keydown="{{keydownHandler}}"
+           on-click="{{clickHandler}}">
+</template>
+
+<script>
+"use strict";
+
+class QueryBuilder {
+  beforeRegister() {
+    this.is =  'query-builder';
+
+    this.properties = {
+        values: [],
+        nodes: [],
+        links: [],
+        props: {},
+        delimiter: '',
+        enabled: false,
+        hint: '',
+        input: '',
+        base: '',
+        query: ''
+    }
+  }
+  nodesChanged() {
+      this.nodes.sort();
+      this.values = this.nodes;
+  }
+
+  linksChanged() {
+      this.links.sort();
+  }
+
+  enabledChanged() {
+      if (!this.enabled) {
+          this.hint = '';
+      }
+  }
+
+  inputHandler(e) {
+      this.input = this.$.input.value;
+  }
+
+  // TODO: start, match гэж эхэлсэн байвал cypher sql гэж ойлгоно, бусад тохиолдолд хялбаршуулсан sql гэж үзнэ
+
+  // TODO: дурын байрлал дээр курсор байрлуулаад бичихэд зөв ажиллах ёстой
+  // Ctrl+Space дарахад сонголтуудыг харуулах уу?
+  inputChanged(old) {
+      this.enabled = this.input.length > old.length && (this.input.indexOf(old) === 0) && this.$.measure.offsetWidth < this.$.input.offsetWidth;
+
+      var delimiterIndex = this.input.length-1; //this.input.lastIndexOf(this.delimiter);
+
+      // тусгаарлагчийн байрлалыг олох
+      for (; delimiterIndex>=0; delimiterIndex--) {
+          if (this.input.charAt(delimiterIndex) == ' ') {
+
+          } else if (this.input.charAt(delimiterIndex) == '(') {
+              // nodes харуулах
+              this.delimiter = '(';
+              this.values = this.nodes;
+              break;
+          } else if (this.input.charAt(delimiterIndex) == '.') {
+              this.delimiter = '.';
+              // props харуулах
+              break;
+          } else if (this.input.charAt(delimiterIndex) == '[') {
+              // links харуулах
+              this.delimiter = '[';
+              this.values = this.links;
+              break;
+          }
+      }
+
+      var base = this.input.slice(0, Math.max(0, delimiterIndex));
+      if (base != this.base) {
+          this.base = base;
+      }
+
+      //console.log(base);
+
+      this.query = this.input.slice(delimiterIndex+1);
+  }
+
+
+  queryChanged() {
+      if (!this.enabled || !this.query) {
+          return;
+      }
+      var hint = this.query;
+      for (var i = 0, d; d = this.values[i]; i++) {
+          if (d.indexOf(this.query) === 0) {
+              hint = d;
+              break;
+          }
+      }
+      this.hint = (this.base + this.delimiter) + hint;
+  }
+
+  keydownHandler(e) {
+      switch (e.keyCode) {
+          case 13: // enter
+          case 39: // right arrow
+              this.hint && (this.$.input.value = this.hint);
+              break;
+          case 8: // backspace
+          case 27: // esc
+          case 37: // left arrow
+              this.enabled = false;
+              break;
+          default:
+              break;
+      }
+  }
+  
+  clickHandler() {
+      this.enabled = false;
+  }
+}
+
+Polymer(QueryBuilder);
+
+</script>
+</dom-module>

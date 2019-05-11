@@ -1,0 +1,39 @@
+{
+  "name": "br-icons",
+  "version": "1.0.9",
+  "homepage": "https://github.com/bed-rock/br-icons",
+  "authors": [
+    "cbfranca <cleidsonbf@gmail.com>",
+    "marcelo-ribeiro <marceloribeiromidia@gmail.com>"
+  ],
+  "description": "A set of icons used in bedrock's framework",
+  "main": "br-icons",
+  "keywords": [
+    "webcomponent",
+    "polymer",
+    "icons",
+    "svg"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bedrock-base": "~1.0.0",
+    "iron-iconset-svg": "PolymerElements/iron-iconset-svg#~1.0.4",
+    "iron-icon": "PolymerElements/iron-icon#~1.0.3"
+  },
+  "_release": "1.0.9",
+  "_resolution": {
+    "type": "version",
+    "tag": "1.0.9",
+    "commit": "eb727335246ff5cc388aa45547fc4007d3d483aa"
+  },
+  "_source": "git://github.com/bed-rock/br-icons.git",
+  "_target": "~1.0.0",
+  "_originalSource": "br-icons"
+}

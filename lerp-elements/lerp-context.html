@@ -1,0 +1,139 @@
+<!-- lerp context -->
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../iron-localstorage/iron-localstorage.html">
+
+<dom-module id="lerp-context">
+<template>
+  <!-- localstorage -->
+  <iron-localstorage name="lerp-token"
+    value="{{token}}"></iron-localstorage>
+  <iron-localstorage name="lerp-user"
+      value="{{user}}"></iron-localstorage>
+</template>
+
+<script type="text/javascript">
+"use strict"
+
+class LerpContext {
+  beforeRegister() {
+    this.is = "lerp-context";
+
+    this.properties = {
+      uri: String,           // lerp-server URI
+      user: { type: Object}, // user or app
+      token: String,
+      state: String,
+      auto: Boolean           // auto connect
+    }
+  }
+
+  created() {
+    this.state = 'loading';
+  }
+
+  ready() {
+  }
+
+  handleResponse(e, detail, target) {
+  }
+
+  handleError(e, detail, target) {
+  }
+
+  send(params) {
+    return new Promise(function(resolve, reject) {
+      if (!param) {
+        // param ?
+        resolve();
+        return;
+      }
+
+      params.jsonrpc = '2.0';
+      params.id = "lerp_" + new Date().getTime();
+      params.token = this.token;
+
+      console.log("Sending " + JSON.stringify(params));
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", this.uri);
+      xhr.setRequestHeader('Content-Type', 'application/json;charset=utf-8');
+      xhr.setRequestHeader('Token', this.token);
+
+      xhr.onload = function() {
+        if (xhr.status == 200) {
+          resolve(xhr.response);
+        } else {
+          reject(xhr.statusText);
+        }
+      };
+
+      // Handle network errors
+      xhr.onerror = function() {
+        reject("Network Error");
+      };
+
+      // Make the xhruest
+      xhr.send(JSON.stringify(params));
+    }.bind(this));
+  }
+
+  isSuccess(xhr) {
+    var status = xhr.status;
+    return (status == null || status == 0) || (status >= 200 && status < 300);
+  }
+
+  validate() {
+    return new Promise(function(resolve, reject) {
+      if (!this.token) {
+        this.state = 'invalid';
+        resolve(this.state);
+        return;
+      }
+
+      // check if token is alive
+      this.send({'method': 'auth.validate'}).then(function(resp) {
+        this.user = resp;
+        resolve(resp);
+      }, function(err) {
+        reject("validate failed!");
+      });
+    }.bind(this));
+  }
+
+  login(username, password) {
+    let req = {
+      'jsonrpc': '2.0',
+      'id': "lerp_" + new Date().getTime(),
+      'method': 'auth.login',
+      'token': this.token,
+      'params': [username, password, 'LDAP']
+    };
+
+    this.user = this.send(req);
+
+    if (this.user) {
+      return true;
+    }
+
+    return false;
+  }
+
+  // Серверээс холболт салгах
+  close() {
+    this.token = "";
+    window.location.href = "/";
+  }
+
+  logout(e, detail, target) {
+    if (window.confirm("Програмаас гарах уу?")) {
+      this.close();
+    }
+  }
+
+}
+
+Polymer(LerpContext);
+
+</script>
+</dom-module>

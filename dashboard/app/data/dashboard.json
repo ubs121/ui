@@ -1,0 +1,72 @@
+[
+	{
+		"name": "dashboard1",
+		"title": "Branches",
+		"widgets": [
+			{
+				"element": "geo-view",
+				"config": {
+					"label": "Employee count",
+					"dataUrl": "data/emp_count.csv",
+					"data": [],
+					"format": "text"
+				}
+			}
+		]
+	},
+
+	{
+		"name": "dashboard2",
+		"title": "Key metrics",
+		"widgets": [
+			{
+				"element": "text-view",
+				"config": {
+					"label": "Number of open issues",
+					"text": 120
+				}
+			},
+			
+			{
+				"element": "line-chart",
+				"config": {
+					"label": "Revenue Chart",
+					"dataUrl": "http://localhost:8080/longpoll/revenue_data",
+					"update": true,
+					"data": [],
+					"format": "text",
+					"labelX": "Month",
+					"labelY": "Revenue ($)"
+				}
+			},
+			{
+				"element": "bar-chart",
+				"config": {
+					"label": "Reported issues",
+					"dataUrl": "http://localhost:8080/longpoll/reported_issues",
+					"update": true,
+					"data": [],
+					"format": "text",
+					"labelX": "Month",
+					"labelY": "Number of issues"
+				}
+			}
+		]
+	},
+
+	{
+		"name": "dashboard3",
+		"title": "All issues",
+		"widgets": [
+			{
+				"element": "issue-view",
+				"config": {
+					"label": "All issues",
+					"data": [],
+					"dataUrl": "data/issues.csv"
+				}
+			}
+
+		]
+	}
+]

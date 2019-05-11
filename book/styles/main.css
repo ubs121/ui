@@ -1,0 +1,109 @@
+/*
+Copyright (c) 2015 ubs121.
+*/
+
+body {
+  padding: 0;
+  margin: 0;
+  font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+  color: #222;
+  overflow-x: hidden;
+  background-image: url(img/tile-bg-2.png);
+}
+
+:host {
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+#main {
+  top: 80px;
+}
+
+#main-toolbar {
+  background-image: url(img/tile-bg-2.png);
+
+  z-index: 5000;
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  box-shadow: 0 0 10px #888;
+  width: 100%;
+  height: 50px;
+}
+
+#main-toolbar > * {
+  margin: 0 3px !Important;
+}
+
+#main-toolbar::shadow .toolbar-tools {
+  height: 50px;
+}
+
+#filter {
+  background-image: url(img/tile-bg-2.png);
+  z-index: 5000;
+  position: fixed;
+  top: 55px;
+  box-shadow: 0 0 5px #888;
+  width: 100%;
+  padding: 10px;
+}
+
+
+#search {
+  font-size: 18px;
+  color: #000;
+  text-align: center;
+}
+
+#dropShadow {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  margin: 0;
+  padding: 0;
+  box-shadow: inset 0px 5px 6px -3px rgba(0, 0, 0, 0.4);
+}
+
+.loggedImg::shadow core-icon div {
+  border-radius: 50%;
+  background-position: 0 0 !Important;
+  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.26);
+}
+
+.loggedImg::shadow core-icon {
+  height: 30px;
+  width: 30px;
+}
+
+.loggedImg {
+  display: inline-block;
+}
+
+.search-filter {
+  list-style: none;
+  margin: 10px;
+}
+
+.search-filter li {
+  float: left;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 5px 9px;
+  font-weight: normal !important;
+  background: #eee;
+  border-radius: 10px;
+  text-align: center;
+  cursor: pointer;
+  margin: 0 5px 5px 0;
+  line-height: 1;
+  color: #222;
+}

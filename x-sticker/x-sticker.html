@@ -1,0 +1,124 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="x-sticker">
+
+<style>
+  .sticker {
+    display: inline-block;
+    position:absolute;
+    margin:auto;
+  }
+
+  .sticker #note {
+    position:relative;
+  }
+
+  .sticker .note .clicked {
+    cursor:-webkit-grabbing;
+    cursor:-moz-grabbing;
+  }
+
+  .sticker #note h4 {
+    background: #FCFAC6;
+    border: 1px solid silver;
+    margin: 0px;
+    padding: 3px;
+    font-size: small;
+    cursor:-webkit-grab;
+    cursor:-moz-grab;
+  }
+
+  .sticker #note textarea {
+    height: 60px;
+    width: 150px;
+    border-top: 0;
+    overflow:hidden;
+    padding:2px;
+    background: #FCFAC6;
+    margin:0px;
+    -webkit-box-sizing: border-box;
+    height: 100%;
+    background-image:  -webkit-linear-gradient(left, rgba(255,85,91, .2), rgba(255,85,91, .2)), -webkit-linear-gradient(left, rgba(255,85,91, .8), rgba(255,85,91, .8)), -webkit-linear-gradient(top, white 0px, rgba(255,255,255,0) 0px), -webkit-repeating-linear-gradient(#FCFAC6 0px, #FCFAC6 18px, #A6FFED 19px, #FCFAC6 20px);
+    background-image:  -moz-linear-gradient(left, rgba(255,85,91, .2), rgba(255,85,91, .2)), -moz-linear-gradient(left, rgba(255,85,91, .8), rgba(255,85,91, .8)), -moz-linear-gradient(top, white 0px, rgba(255,255,255,0) 0px), -moz-repeating-linear-gradient(#FCFAC6 0px, #FCFAC6 18px, #A6FFED 19px, #FCFAC6 20px);
+    background-image:  -ms-linear-gradient(left, rgba(255,85,91, .2), rgba(255,85,91, .2)), -ms-linear-gradient(left, rgba(255,85,91, .8), rgba(255,85,91, .8)), -ms-linear-gradient(top, white 0px, rgba(255,255,255,0) 0px), -ms-repeating-linear-gradient(#FCFAC6 0px, #FCFAC6 18px, #A6FFED 19px, #FCFAC6 20px);
+    background-image:  -o-linear-gradient(left, rgba(255,85,91, .2), rgba(255,85,91, .2)), -o-linear-gradient(left, rgba(255,85,91, .8), rgba(255,85,91, .8)), -o-linear-gradient(top, white 0px, rgba(255,255,255,0) 0px), -o-repeating-linear-gradient(#FCFAC6 0px, #FCFAC6 18px, #A6FFED 19px, #FCFAC6 20px);
+    background-image:  linear-gradient(left, rgba(255,85,91, .2), rgba(255,85,91, .2)), linear-gradient(left, rgba(255,85,91, .8), rgba(255,85,91, .8)), linear-gradient(top, white 0px, rgba(255,255,255,0) 0px), repeating-linear-gradient(#FCFAC6 0px, #FCFAC6 18px, #A6FFED 19px, #FCFAC6 20px);
+    background-size: 1px, 1px, auto, auto 20px;
+    background-repeat: repeat-y, repeat-y, no-repeat, repeat;
+    background-position: 90% 0px, 10% 0px, 0px 0px, 0px 0px;
+  }
+
+
+  .sticker:before, .sticker:after {
+      position: absolute;
+      width: 40%;
+      height: 10px;
+      content: " ";
+      left: 1px;
+      bottom: 6px;
+      background: transparent;
+      -webkit-transform: skew(-5deg) rotate(-5deg);
+      -moz-transform: skew(-5deg) rotate(-5deg);
+      -ms-transform: skew(-5deg) rotate(-5deg);
+      -o-transform: skew(-5deg) rotate(-5deg);
+      transform: skew(-5deg) rotate(-5deg);
+      -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      -moz-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+      z-index: -1;
+  }
+  .sticker:after {
+      left: auto;
+      right: 1px;
+      -webkit-transform: skew(5deg) rotate(5deg);
+      -moz-transform: skew(5deg) rotate(5deg);
+      -ms-transform: skew(5deg) rotate(5deg);
+      -o-transform: skew(5deg) rotate(5deg);
+      transform: skew(5deg) rotate(5deg);
+  }
+</style>
+
+<template>
+<core-drag-drop on-drag-start="{{dragStart}}"></core-drag-drop>
+
+<div class="sticker" style="left: {{x}}px; top:{{y}}px;">
+   <div id="note">
+    <input type="hidden" value="{{author}}">
+    <h4 draggable="true">
+      <span>{{ label }}</span>
+      <button class="close">&times;</button>
+      <br/>
+      <span>{{ date }}</span>
+    </h4>
+    <textarea>{{ value }}</textarea>
+  </div>
+</div>
+
+</template>
+
+<script>
+PolymerElement({
+  is: "x-sticker",
+
+  properties: {
+    author: String,
+    value: { type: String, value: ""},
+    label: { type: String, value: ""},
+    date: { type: String, value: ""},
+    x: { type: Number, value: 0},
+    y: { type: Number, value: 0},
+    height: { type: Number, value: 0},
+    width: { type: Number, value: 0}
+  },
+
+  created: function() {
+
+  },
+
+  dragStart: function(e, detail) {
+
+  }
+});
+</script>
+
+</dom-module>

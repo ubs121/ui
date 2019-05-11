@@ -1,0 +1,146 @@
+
+<!-- dashboard widget behavior-->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<script>
+WidgetBehavior =   {
+    properties: {
+    	label: String,
+
+        // data url (remote data)
+        dataUrl: {
+            type: String,
+            value: ''
+        },
+
+        update: { type: Boolean, value: false}, // push data from the server?
+
+    	// actual data
+    	data: {
+    		type: Array,
+    		value: function() { return []; },
+            observer: "_dataChanged"
+    	},
+
+        format: {
+            type: String,
+            value: "json"
+        },
+
+        error: String, // widget error
+        tryCount: {
+            type: Number,
+            value: 0
+        }
+    	
+    },
+
+    attached: function(e) {
+        if (this.dataUrl && this.dataUrl.length > 0) {
+           this.getData();
+        }
+    },
+
+    getData: function(e) {
+        console.log("getData");
+        var that = this;
+
+        if (!that.dataUrl) return;
+
+        var url = that.dataUrl.replace('longpoll', 'getdata');
+
+        fetch(url).then(function(response) {
+            if (that.format == "text") {
+                return response.text();
+            } else {
+                return response.json();
+            }
+        }).then(function(respData) {
+            if (respData) {
+                if (that.format == "text") {
+                    if (respData.length > 0) {
+                        that.data = that.parseCsv(respData);
+                    }
+                } else {
+                    that.data = respData;
+                }
+
+                // long polling
+                if (that.update && !url.endsWith(".csv") && !url.endsWith(".tsv")) {
+                    that.pollData();
+                }
+            }
+        }).catch(function(err) {
+            that.error = err;
+        });
+    },
+
+    
+    pollData: function() {
+        var that = this;
+
+        fetch(that.dataUrl).then(function(response) {
+            if (that.format == "text") {
+                return response.text();
+            } else {
+                return response.json();
+            }
+        }).then(function(respData) {
+            if (respData) {
+                if (that.format == "text") {
+                    if (respData.length > 0) {
+                        that.data = that.parseCsv(respData);
+                    }
+                } else {
+                    that.data = respData;
+                }
+
+                // long polling
+                that.pollData();
+            }
+        }).catch(function(err) {
+            that.error = err;
+            console.log(err);
+
+            // try 10 times with 5 seconds delay in case of error
+            that.tryCount++;
+            if (that.tryCount < 10) {
+                setTimeout(that.pollData, 5000);
+            }
+        });
+    },
+
+    // converts text (csv, tsv) data into array
+    parseCsv: function(txt) {
+        var re = /\r|\n/;
+        var lines = txt.split(re);
+        var headerLine = lines[0];
+        var fields = headerLine.split(/[,|;\t]/);
+
+        var rows = new Array();
+
+        for (var i = 1; i < lines.length; i++) {
+            var line = lines[i];
+
+            if (line.length == 0) {
+              continue;
+            }
+
+            var values = line.trim().split(/[,|;\t]/);
+            var obj = {};
+
+            for (var j = 0; j < values.length; j++) {
+              obj[ fields[j] ] = values[j].trim();
+            }
+
+            rows.push(obj);
+
+        }
+
+        return rows;
+    }
+  
+
+  }
+</script>

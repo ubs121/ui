@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>br-selectbox</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link rel="stylesheet" href="../../bedrock/dist/css/style.css">
+
+	<link rel="import" type="html" href="../../polymer/polymer.html">
+	<script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+	<link rel="import" href="../src/br-select.html">
+
+</head>
+<body>
+
+	<div class="container">
+
+		<h1>br-select example</h1>
+
+<!--
+Usage:
+Tag: <br-select></br-select>
+Attributes:
+  model: Type: Array
+  options: Type: Array
+  Required: Type: Boolean
+  multiselect: Type: Boolean
+  Desription: Set if br-selectbox is multiselect.
+  Default value: false
+-->
+
+<div class="container">
+	<div class="row">
+		<div class="col-md-6">
+			<br-select
+				model={{value}}
+				label="Selecione"
+				options='[{"key": 1, "value": "Judith"}, {"key": 2, "value": "Marie"}, {"key": 3, "value": "Joseph"}, {"key": 4, "value": "John"}]'>
+			</br-select>			
+		</div>
+	</div>
+</div>
+
+</body>
+</html>

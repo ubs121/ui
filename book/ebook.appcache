@@ -1,0 +1,19 @@
+CACHE MANIFEST
+# Adding a version number and/or timestamp here is a good strategy. Changing
+# the manifest file, even a comment line, will force the browser to refresh its
+# cached resources.
+# 2015-01-05:v1
+
+# Explicitly cached entries. This should be enough to run the sample.
+CACHE:
+index.html
+app.js
+main.css
+
+# All other resources (e.g. sites) require the user to be online.
+NETWORK:
+*
+
+# offline.html will be displayed if the user is offline.
+FALLBACK:
+

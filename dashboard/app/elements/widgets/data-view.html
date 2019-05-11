@@ -1,0 +1,228 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/paper-checkbox/paper-checkbox.html">
+
+<dom-module id="data-view">
+<template>
+  <style>
+    .table {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      min-height: .01%;
+      margin-bottom: 20px;
+      border-collapse: collapse;
+      padding-top: 10px;
+      font-size: 14px;
+      color: #333;
+      font-family: Calibri, Arial;
+      overflow-y: hidden;
+      overflow-x: auto;
+      overflow-style: autohiding-scrollbar;
+    }
+    
+    .table>tbody>tr:hover>td, .table>tbody>tr:hover>th, .table>tbody>tr.active>td, .table>tbody>tr.active>th {
+      background-color: #f5f5f5;
+      color: #333;
+    }
+    .table>thead>tr>th, .table>tbody>tr>th, .table>tfoot>tr>th, .table>thead>tr>td, .table>tbody>tr>td, .table>tfoot>tr>td {
+      padding: 5px 8px;
+      line-height: 1.42857143;
+      border-top: 1px solid #ddd;
+      text-align: left;
+    }
+    .table th {
+      font-weight: normal;
+      padding: 8px !important;
+    }
+    .table>thead {
+      background: #4285f4;
+      color: #fff;
+      text-transform: uppercase;
+      text-align: center
+    }
+
+    .sorted {
+      text-decoration: underline;
+    }
+
+    .dropdown-content {
+        display: none;
+        position: absolute;
+        background-color: white;
+        min-width: 60px;
+        box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    }
+
+    .dropdown-content a {
+        color: black;
+        padding: 10px 12px;
+        text-decoration: none;
+        display: block;
+    }
+
+    .show {display:block;}
+
+    
+  </style>
+
+
+  <table class="table">
+    <!-- header -->
+    <thead>
+      <tr style="cursor: pointer;">
+        <td style="width: 5px;"></td>
+        <template is="dom-repeat" items="{{header}}" index-as="i">
+          <th on-tap="_changeSort" data-col="{{i}}" class="{{sortClass}}">{{item}}</th>
+        </template>
+      </tr>
+
+    </thead>
+
+
+    <!-- body -->
+    <tbody>
+      <template is="dom-repeat" items="{{data}}" as="row" id="tbl"
+        filter="{{_filter(filter)}}" 
+        sort="{{_sort(sortColumn, sortAsc)}}">
+        
+        <tr>
+          <td>
+            <paper-checkbox on-tap="_select"></paper-checkbox>
+          </td>
+          <template is="dom-repeat" items="[[header]]" index-as="i">  
+            <td>[[arrayItem(row, i)]]</td>
+          </template>
+        </tr>
+
+      </template>
+      
+    </tbody>
+  </table>
+
+  <array-selector id="selector" items="{{data}}" selected="{{selected}}" multi toggle></array-selector>
+</template>
+
+<script>
+ (function() {
+      'use strict';
+      
+      Polymer({
+        is: 'data-view',
+
+        properties: {
+          // header or field names
+          header: {
+            type: Array,
+            value: function() { return []; },
+            observer: "_headerChanged"
+          },
+
+          // data, 2 dimensional array
+          data: {
+            type: Array,
+            value: function() { return []; },
+            observer: "_dataChanged"
+          },
+
+          sortColumn: {
+            type: Number,
+            value: 0,
+            observer: "_sortColumnChanged"
+          },
+
+          sortAsc: { 
+            type: Boolean, 
+            value: false 
+          },
+
+          filter: {
+            type: String,
+            value: ''
+          },
+        },
+
+        ready: function(e) {
+        },
+
+        arrayItem: function(arr, col) {
+          return arr[col];
+        },
+
+        _headerChanged: function(e) {
+        },
+
+        _dataChanged: function(e) {
+        },
+
+        _filter: function(val) {  
+          return function(r) {
+            if (!val) return true;
+            if (!r) return false;
+
+            for (var i = 0; i < r.length; i++) {
+              if (r[i].toLowerCase().indexOf(val.toLowerCase()) >= 0) {
+                return true;
+              }
+            }
+            return false;
+          }.bind(this);
+        },
+
+        _sort: function(sortColumn, sortAsc) {
+          if (sortAsc) {
+            return function(a, b) { return a[sortColumn].localeCompare(b[sortColumn]); }
+          } else {
+            return function(a, b) { return b[sortColumn].localeCompare(a[sortColumn]); }
+          }
+        },
+
+        _changeSort: function(e) {
+          if (e.target.getAttribute('sort-direction') == 'asc') {
+            e.target.setAttribute('sort-direction', 'desc');
+            this.sortAsc = false;
+          } else {
+            e.target.setAttribute('sort-direction', 'asc');
+            this.sortAsc = true;
+          }
+          
+          this.sortColumn = e.target.dataCol;
+        },
+
+        _sortColumnChanged: function(e) {
+          var thList = this.querySelectorAll('th');
+          for (var i = 0; i < thList.length; i++)  { 
+            if (i == this.sortColumn) {
+              thList[i].classList.add('sorted');
+            } else {
+              thList[i].classList.remove('sorted'); 
+            }
+          }
+
+          
+        },
+
+        _select: function(e) {
+          var item = this.$.tbl.itemForElement(e.target);
+          this.$.selector.select(item);
+
+          // TODO: show/hide delete
+
+          this.fire('select');
+        },
+
+        delete: function() {
+          var that = this;
+
+          this.data = this.data.filter(function(item) {
+            return that.selected.indexOf(item) < 0;
+          });
+
+          that.$.selector.clearSelection();
+          that.selected = [];
+        }
+
+    });
+ })();
+
+</script>
+</dom-module>

@@ -1,0 +1,41 @@
+.list {
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+
+  li {
+    height: $list-items-height;
+    line-height: $list-items-height;
+    padding: 0 1rem;
+    color: $list-items-color;
+    border-bottom: 1px solid $color-white-10;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: $transition;
+
+    &:hover,
+    &:focus,
+    &.is_selected {
+      background: $list-items-hover-bg-color;
+      color: $list-items-hover-color;
+    }
+
+    &:active {
+      background: #000;
+    }
+
+    a {
+      display: block;
+      text-decoration: none;
+      outline: none;
+
+      &:hover,
+      &:focus {
+        color: $list-items-hover-color;
+      }
+    }
+
+  }
+}

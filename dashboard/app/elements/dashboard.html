@@ -1,0 +1,100 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<!-- set of pre-defined widgets -->
+<link rel="import" href="widgets/geo-view.html">
+<link rel="import" href="widgets/text-view.html">
+<link rel="import" href="widgets/issue-view.html">
+<link rel="import" href="widgets/line-chart.html">
+<link rel="import" href="widgets/bar-chart.html">
+
+<dom-module id="dashboard-container" draggable>
+<style>
+  :host {
+    width: 100%;
+    height: 100%;
+  }
+</style>
+<template>
+<div id="widgets">
+</div>
+
+</template>
+
+<script>
+(function() {
+  'use strict';
+  
+  Polymer({
+    is: 'dashboard-container',
+
+    properties: {
+    	data: {
+    		type: Object,
+    		value: function() { return {}; },
+        observer: "_dataChanged"
+    	}
+    },
+
+    ready: function(e) {
+      this.render();
+    },
+
+    _dataChanged: function(e) {
+      console.log("data changed!");
+
+      this.render();
+    },
+
+    render: function(e) {
+      this.clear();
+
+      if (!this.data.widgets) {
+        return;
+      }
+
+      // TODO: cache widgets for re-use
+
+      for (var i = 0; i < this.data.widgets.length; i++) {
+        var w = this.data.widgets[i];
+
+        // TODO: create border & toolbar
+
+        var el = document.createElement(w.element);
+
+        // is registered element ?
+        if (el.constructor !== HTMLUnknownElement) {
+
+          // set attributes
+          if (w.config) {
+            for (var attr in w.config) {
+              if (w.config.hasOwnProperty(attr)) {
+                el[attr] = w.config[attr];
+              }
+            }
+
+            if (w.config.content) {
+               el.innerText =  w.config.content;
+            }
+          }
+
+          this.$.widgets.appendChild(el);
+        }
+      }
+
+      
+    },
+
+    clear: function(e) {
+
+      while (this.$.widgets.firstChild) {
+        this.$.widgets.removeChild(this.$.widgets.firstChild);
+      }
+    },
+
+    dragStart: function(e) {
+
+    }
+  });
+})();
+</script>
+</dom-module>

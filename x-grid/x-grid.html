@@ -1,0 +1,664 @@
+<polymer-element name="x-table">
+<template>
+  <style>
+    @media print {
+      table>thead {
+        background: #999 !important;
+        color: #000 !important;
+      }
+      label {
+        font-weight:500 !important;
+      }
+      .addBtn,.delBtn,.editBtn {
+        display:none;
+      }
+
+    }
+    td select {
+      padding: 0 !important
+    }
+    td {
+      max-width: 50%;
+    }
+    tbody {
+      width: 100%;
+      overflow-y: hidden;
+      overflow-x: auto;
+    }
+    .tr {
+      margin-bottom:10px;
+    }
+    .table {
+      margin-bottom: -2px;
+    }
+    table {
+      max-width: 100%;
+      border-collapse: collapse;
+      width: 100%;
+      padding-top: 10px;
+      font-size: 13px;
+      color: #666;
+      font-family: Calibri, Arial;
+      padding: 0 5px;
+    }
+    table th {
+      font-weight: normal
+    }
+    table>tbody>tr:hover>td, table>tbody>tr:hover>th {
+      background-color: #f5f5f5;
+    }
+    table>thead>tr>th, table>tbody>tr>th, table>tfoot>tr>th, table>thead>tr>td, table>tbody>tr>td, table>tfoot>tr>td {
+      padding: 8px;
+      line-height: 1.42857143;
+      vertical-align: top;
+      border-top: 1px solid #ddd;
+      text-align: left;
+    }
+    table>thead {
+      background: #4285f4;
+      color: #fff;
+      text-transform: uppercase;
+    }
+    label {
+      font-weight:600;
+    }
+  </style>
+  <div style="margin-top:10px;">
+    <label style="min-width:120px;">{{label}}</label>
+  </div>
+  <paper-dialog transition="core-transition-center" backdrop="true" autoCloseDisabled="true">
+    <style>
+      p.warning {
+        font-weight: bold;
+        color: red;
+        text-align: center;
+      }
+    </style>
+    <form>
+      <div>
+        <h4 style="text-align:center;font-weight:bold;">{{label}} нэмэх</h4>
+      </div>
+      <div style="width:350px; max-height: 350px; overflow-y: scroll" horizontal center-justified layout>
+      <div style="width:250px;">
+        <template template repeat="{{c in columns.keys}}">
+          <div style="font-size: 13px">
+            <template if="{{ colFilter.containsKey(c) }}">
+              <paper-radio-group id="{{ c }}"
+                                 label="{{ colNames.containsKey(c) ? colNames[c] : c }}"
+                                 style="width:100%;">
+                <template repeat="{{ option in colFilter[c]['options']}}">
+                <paper-radio-button name="{{ option }}"
+                                    label="{{ option }}"
+                                    style="text-align:center;width:{{ 100/colFilter[c]['options'].length }}%;"
+                                    on-change="{{ onChanged }}"></paper-radio-button>
+                </template>
+              </paper-radio-group>
+            </template>
+            <template if="{{ colTypes[c] == 'text' }}">
+              <x-input value="{{ values[c] }}"
+                       label="{{ colNames.containsKey(c) ? colNames[c] : c }}"
+                       editing="true"
+                       required="{{ required.contains(c) }}"></x-input>
+            </template>
+            <template if="{{ colTypes[c] == 'nested' }}">
+              <x-input value="{{ values[nameParts[0]][nameParts[1]] }}"
+                       label="{{ colNames.containsKey(c) ? colNames[c] : nameParts[0] }}"
+                       editing="true"
+                       required="{{ required.contains(c) }}"></x-input>
+            </template>
+            <template if="{{ colTypes[c] == 'autogrow' }}">
+              <x-input value="{{ values[c] }}"
+                       label="{{ colNames.containsKey(c) ? colNames[c] : c }}"
+                       editing="true"
+                       required="{{ required.contains(c) }}" autogrow="true"></x-input>
+            </template>
+            <template if="{{ colTypes[c] == 'date' }}">
+              <x-input value="{{ values[c] }}"
+                       label="{{ colNames.containsKey(c) ? colNames[c] : c }}"
+                       editing="true"
+                       type="date"
+                       required="{{ required.contains(c) }}"></x-input>
+            </template>
+
+            <template if="{{ colTypes[c] == 'num'}}">
+              <x-input value="{{ values[c] }}"
+                       label="{{ colNames.containsKey(c) ? colNames[c] : c }}"
+                       editing="true"
+                       type="number"
+                       step="any"
+                       required="{{ required.contains(c) }}"></x-input>
+            </template>
+
+            <template if="{{ colTypes[c] == 'bool' }}">
+              <div style="margin: 15px 0;">
+                <paper-checkbox id="{{ c }}"
+                                label="{{ colNames.containsKey(c) ? colNames[c] : c }}"
+                                value="{{ values[c] }}"
+                                checked="{{ checked[c] }}"
+                                on-change="{{ onChecked }}"></paper-checkbox>
+              </div>
+            </template>
+
+            <template if="{{ colTypes[c] == 'combo' }}">
+              <x-select name="{{ c }}"
+                        label="{{ colNames.containsKey(c) ? colNames[c] : c }}"
+                        options="{{ columns[c] }}"
+                        value="{{ values[c] }}"
+                        required="{{ required.contains(c) }}"
+                        editing="{{ editing }}"></x-select>
+            </template>
+            <template if="{{ colTypes[c] == 'recordset' }}">
+              <x-select name="{{ c }}"
+                        label="{{ colNames.containsKey(c) ? colNames[c] : c }}"
+                        datalist="{{ columns[c] }}"
+                        value="{{ values[c] }}"
+                        displayFields="['нэр']"
+                        keyFields="['нэр']"
+                        restrict="true"
+                        editing="{{ editing }}"
+                        required="{{ required.contains(c) }}"
+                        on-change="{{ optSelected }}"></x-select>
+            </template>
+          </div>
+        </template>
+      </div>
+      </div>
+      <div style="text-align:center;">
+        <template if="{{ !valid }}">
+          <p class="warning">Шаардлагатай талбаруудыг бөглөнө үү!</p>
+        </template>
+        <template if="{{ state == 'add' }}">
+          <core-icon-button icon="add" on-click="{{ addRow }}" title="Нэмэх">Нэмэх</core-icon-button>
+        </template>
+        <template if="{{ state == 'edit' }}">
+          <core-icon-button icon="create" on-click="{{ editRow }}" title="Засах">Засах</core-icon-button>
+        </template>
+        <core-icon-button icon="close" on-click="{{ toggleDlg }}" title="Болих" id="cancel">Болих</core-icon-button>
+      </div>
+    </form>
+  </paper-dialog>
+
+  <div class="tr">
+    <table>
+      <thead>
+        <tr style="cursor: pointer;">
+          <th template repeat="{{c in columns.keys}}" data-msg="{{ c }}" on-tap="{{ sort }}">
+            <!-- монгол текст -->
+            <template if="{{ colNames.containsKey(c) }}">
+              {{colNames[c]}}
+            </template>
+            <!-- талбарын нэр -->
+            <template if="{{ !colNames.containsKey(c) }}">
+              {{c}}
+            </template></th>
+        </tr>
+      </thead>
+
+      <tbody id="tbody">
+        <tr template repeat="{{r in rs | enumerate }}"
+          on-mouseover="{{ onItemOver }}"
+          on-mouseout="{{ onItemLeave }}"
+          on-tap="{{ onTap }}"
+          on-change="{{ rowEdited }}"
+          data-msg="{{ r.index }}"
+          style="cursor: pointer;">
+
+           <td template repeat="{{c in columns.keys}}"
+               if="{{ changesOf[r.index] == null }}"
+               style="max-width:50% !important;">
+           {{ stringfy(c, r.value) }}
+           </td>
+             <td class="editBtn" style="padding: 0; width:10px;display: {{editing && canEdit ? '' : 'none'}}">
+                  <core-icon-button icon="create" id="{{ r.index }}" on-click="{{ toggleDlg }}" title="Засах"></core-icon-button>
+             </td>
+             <td class="delBtn" style="padding: 0; width:10px;display: {{editing && canDelete ? '' : 'none'}}">
+                  <core-icon-button icon="delete" id="delete" title="Устгах" on-click="{{ deleteRow }}"></core-icon-button>
+             </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="addBtn">
+      <template if="{{editing && canAdd}}">
+      <core-icon-button icon="add-circle" id="add" on-click="{{ toggleDlg }}" title="Мөр нэмэх"></core-icon-button>
+      </template>
+    </div>
+
+    <!-- мөр устгах товч -->
+    <!-- <div id="deleteBtn" class="btn-toolbar" style="position: absolute; visibility:hidden; left: -20px;">
+        <button on-click="{{ deleteRow }}"
+          class='close pull-right'>&times;</button>
+    </div> -->
+  </div>
+</template>
+</polymer-element>
+
+
+
+
+@CustomTag("x-table-cell")
+class XTableCell extends TableCellElement with Polymer, Observable {
+  @published bool editing = false;
+  @published var value = '';
+  @published String type = 'text';
+  @published List options = toObservable([]);
+
+  XTableCell.created() : super.created() {
+    polymerCreated();
+  }
+}
+
+@CustomTag("x-table")
+class XTable extends PolymerElement {
+  @published bool editing = false;
+  @published bool canAdd = true;
+  @published bool canEdit = true;
+  @published bool canDelete = true;
+  @published String label = '';
+  @published String sorted = '';
+  @published List<Map> rs = toObservable([]);
+  @published var columns = toObservable({});
+  @published Map colNames = toObservable({});
+  @published Map colFilter = toObservable({});
+  @published List required = toObservable([]);
+  @published List link = toObservable([]);
+
+  @observable var values = toObservable({});
+  @observable Map colTypes = toObservable({});
+  @observable bool mouseOver = false;
+  @observable int row = -1; // editing row (focused)
+  @observable String col = '';
+  @observable int hoverRow = -1; // mouse over row
+
+  @observable PaperDialog dlg;
+
+  @observable Map checked = toObservable({});
+  @observable List nameParts = toObservable([]);
+
+  @observable Map listOpts = toObservable({});
+  @observable Map mapOpts = toObservable({});
+
+  @observable String state = "add";
+  @observable var selected;
+  @observable int selectedId;
+  @observable bool valid = true;
+  @observable Map changesOf = toObservable({});
+
+  Element deleteBtn;
+
+  XTable.created() : super.created() {
+
+  }
+
+  _init() {
+    this.onMouseOver.listen((e) => mouseOver = true);
+    this.onMouseLeave.listen((e) {
+      mouseOver = false;
+      leaveFocus();
+    });
+
+    // мөрүүдийг эрэмбэлэх
+//    if (sort != null && sort.length > 0) {
+//      rs.sort((Map x, Map y) => x[sort].compareTo(y[sort]));
+//    }
+  }
+  // record-set агуулсан баганы төрлийг тогтоох
+  domReady() {
+    //if (editing) {
+    dlg = shadowRoot.querySelector('paper-dialog');
+    _init();
+  }
+
+  attached() {
+    super.attached();
+
+  }
+
+
+  rsChanged(old) {
+    if (this.rs == null) {
+      this.rs = toObservable([]);
+    }
+  }
+
+  sort(Event e, var detail, Element target){
+    if(sorted != target.attributes['data-msg']){
+      try {
+        rs.sort((x, y) {
+          if(x[target.attributes['data-msg']] == null){
+            x[target.attributes['data-msg']] = "";
+          }
+          if(y[target.attributes['data-msg']] == null){
+            y[target.attributes['data-msg']] = "";
+          }
+          return x[target.attributes['data-msg']].compareTo(y[target.attributes['data-msg']]);
+        });
+        sorted = target.attributes['data-msg'];
+      } catch (e){ print(e); }
+    } else {
+      try {
+        rs.sort((x, y) {
+          if(x[target.attributes['data-msg']] == null){
+            x[target.attributes['data-msg']] = "";
+          }
+          if(y[target.attributes['data-msg']] == null){
+            y[target.attributes['data-msg']] = "";
+          }
+          return y[target.attributes['data-msg']].compareTo(x[target.attributes['data-msg']]);
+        });
+        sorted = "";
+      } catch(e){ print(e); }
+    }
+  }
+
+  toggleDlg(Event e, var detail, CoreIconButton target) {
+    e.preventDefault();
+    valid = true;
+    nameParts = toObservable([]);
+    if (target.id != "cancel") {
+      values = toObservable({});
+      columns.forEach((String k, var val) {
+        if(k.contains(".")){
+          nameParts = k.split(".");
+          colTypes[k] = "nested";
+        } else if (val is List) {
+          colTypes[k] = "combo";
+        } else if (val is bool) {
+          colTypes[k] = "bool";
+        } else if (val is num) {
+          colTypes[k] = "num";
+        } else if (val == "autogrow") {
+          colTypes[k] = "autogrow";
+        } else if (val is RecordSet) {
+          colTypes[k] = "recordset";
+        } else {
+          colTypes[k] = "text";
+          if (val != "" && val != null) {
+            try {
+              DateTime.parse(val);
+              colTypes[k] = "date";
+            } catch (e) {}
+          }
+        }
+        if (colTypes[k] == "autogrow") {
+          values[k] = "";
+        }
+        if (target.id == "add") {
+          state = "add";
+          if (colTypes[k] != 'combo' && colTypes[k] != 'recordset' &&
+              colTypes[k] != 'bool' && colTypes[k] != 'autogrow' &&
+              colTypes[k] != 'nested') {
+              values[k] = val.toString();
+          } else if (colTypes[k] == 'bool') {
+            checked[k] = false;
+            values[k] = "0";
+          } else if (colTypes[k] == 'nested') {
+            values[nameParts[0]] = firstNonNull(values[nameParts[0]], toObservable({}));
+            values[nameParts[0]][nameParts[1]] = "";
+          } else {
+            values[k] = "";
+          }
+        } else if (target.id != "cancel") {
+          state = "edit";
+          selected = rs.elementAt(int.parse(target.id));
+          selectedId = int.parse(target.id);
+          if(colTypes[k] == 'nested'){
+            values[nameParts[0]] = firstNonNull(values[nameParts[0]], toObservable({}));
+            selected[nameParts[0]] = firstNonNull(selected[nameParts[0]], toObservable({}));
+            values[nameParts[0]][nameParts[1]] = selected[nameParts[0]][nameParts[1]];
+          } else {
+            values[k] = selected[k];
+          }
+          if (colTypes[k] == 'bool') {
+            if (values[k] == '1') {
+              checked[k] = true;
+            } else {
+              checked[k] = false;
+            }
+          }
+        }
+      });
+      print("colTypes=${colTypes}");
+    } else {
+      if (link.isNotEmpty) {
+        link.forEach((l) {
+          l.forEach((key, val) {
+            values[key] = "";
+          });
+        });
+      }
+      if (colFilter.isNotEmpty) {
+        colFilter.forEach((col, value) {
+          values[col] = "";
+        });
+      }
+      var paperBtns = target.parent.parent.querySelectorAll('paper-radio-button');
+      if (paperBtns.length > 0) {
+        paperBtns.forEach((paperBtn) {
+          paperBtn.checked = false;
+        });
+      }
+    }
+    dlg.toggle();
+  }
+
+
+  onChecked(Event e, var detail, PaperCheckbox target) {
+    if (target.checked) {
+      values[target.id] = "1";
+    } else {
+      values[target.id] = "0";
+    }
+  }
+
+  //Parent select-ийн утгаас хамааруулж child select-ийн option-ууд дүүргэх
+
+  optSelected(Event e, var detail, XSelect target) {
+    var selected = link.firstWhere((item) => item['parent'] == target.name, orElse: () => null);
+    if (selected != null) {
+      if (selected['parent'].isNotEmpty && selected['child'].isNotEmpty && selected['field'].isNotEmpty) {
+        RecordSet child = columns[selected['child']];
+        child.filter = {
+          selected['field']: target.value
+        };
+        child.find();
+      }
+    }
+  }
+  //Filter-ээс хамааруулж option-ууд дүүргэх
+  onChanged(Event e, var detail, PaperRadioButton target) {
+    //e.preventDefault();
+    if (!columns.containsKey(colFilter[target.parent.id]['field'])) {
+      values[colFilter[target.parent.id]['field']] = target.label;
+    }
+    if (columns[target.parent.id] is RecordSet) {
+      RecordSet filtered = columns[target.parent.id];
+      filtered.filter = {
+        colFilter[target.parent.id]['field']: target.label
+      };
+      filtered.find();
+    }
+  }
+
+  addRow(Event e, var detail, CoreIconButton target) {
+    e.preventDefault();
+    FormElement form = target.parent.parent;
+    valid = true;
+    required.forEach((req) {
+      if (values[req] == null || values[req] == "") {
+        valid = false;
+      }
+    });
+    if (valid) {
+      Map r = {};
+      for (String k in columns.keys) {
+        if (values[k] is! List && values[k] is! RecordSet) {
+          // TODO: default утгуудыг болих ???
+          if(colTypes[k] == 'nested'){
+            r[nameParts[0]] = firstNonNull(r[nameParts[0]], toObservable({}));
+            r[nameParts[0]][nameParts[1]] = values[nameParts[0]][nameParts[1]];
+          } else if(colTypes[k] == 'num'){
+            try {
+              r[k] = int.parse(values[k]);
+            } catch(e){
+              r[k] = values[k];
+            }
+          } else {
+            r[k] = values[k];
+          }
+        }
+      }
+      rs.add(r);
+      dlg.toggle();
+    } else {
+      valid = false;
+    }
+  }
+
+  editRow(Event e, var detail, CoreIconButton target) {
+    e.preventDefault();
+    //FIXME:rs-д өөрчлөлт ороход stringfy өөрчлөлтийг мэдэрч өгөгдлийг шинэчлэж чадахгүй тул
+    //changesOf[r.index] нөхцөл ашиглаж засвар орсон мөрийн <td> элементүүдийг DOM-оос түр хасч байна.
+    changesOf[selectedId] = true;
+    FormElement form = target.parent.parent;
+    required.forEach((req) {
+      if (values[req] == null || values[req] == "") {
+        valid = false;
+      }
+    });
+    if (valid) {
+      var trs = shadowRoot.querySelectorAll('tr');
+      var tds = trs[selectedId + 1];
+      int index = -1;
+      values.forEach((key, val) {
+        index += 1;
+        //tds.cells[index].text = val.toString();
+        if(colTypes[key] == 'num'){
+          try {
+            rs[selectedId][key] = int.parse(val);
+          } catch(e){
+            rs[selectedId][key] = val;
+          }
+        } else {
+          rs[selectedId][key] = val;
+        }
+      });
+      dlg.toggle();
+      //FIXME:засвар орсон мөрийн <td> элементүүдийг DOM-д дахин нэмснээр stringfy засварласан утгуудыг харуулна .
+      changesOf = toObservable({});
+    } else {
+      valid = false;
+    }
+  }
+  dlgChanged(){
+    if(!dlg.opened){
+      changesOf = toObservable({});
+    }
+  }
+  onTap(Event e, var detail, TableRowElement target){
+    e.preventDefault();
+
+    int i = int.parse(target.attributes['data-msg']);
+
+    fire('rowclick', detail: i);
+  }
+  onItemOver(MouseEvent e, var detail, TableRowElement target) {
+    e.preventDefault();
+    if (!editing) return;
+//
+//    if (deleteBtn == null) {
+//      deleteBtn = $["deleteBtn"];
+//    }
+//
+    int i = int.parse(target.attributes['data-msg']);
+    if (hoverRow != i) {
+      hoverRow = i;
+//      deleteBtn.style.top = "${deleteBtn.parent.offsetTop + target.offset.top + 20}px";
+//      deleteBtn.style.left = "${deleteBtn.parent.offsetWidth - 40}px";
+//      deleteBtn.style.visibility = "visible";
+//      deleteBtn.attributes['data-msg'] = i.toString();
+    }
+  }
+
+  onItemLeave(MouseEvent e, var detail, TableRowElement target) {
+    if (!editing) return;
+
+    int i = int.parse(target.attributes['data-msg']);
+
+    if (hoverRow != i) {
+      leaveFocus();
+    }
+  }
+
+  deleteRow(Event e, var detail, Node target) {
+    e.preventDefault();
+    if (window.confirm("Энэ мөрийг хасах уу?")) {
+      if (hoverRow > -1) {
+        fire('delete',detail: rs.elementAt(hoverRow));
+        rs.removeAt(hoverRow);
+        leaveFocus();
+      }
+    }
+  }
+
+  leaveFocus() {
+    hoverRow = -1;
+    if (deleteBtn != null) {
+      deleteBtn.style.visibility = "hidden";
+    }
+  }
+  hack(obj){
+    return obj;
+  }
+  stringfy(String f, Map r) {
+    if (f.contains(".")) {
+      // Education: [ {School: 1}, {School: 2} ]
+      List nameParts = f.split(".");
+      var v = r[nameParts[0]];
+      if (v is List<Map>) {
+        StringBuffer sb = new StringBuffer();
+        for (Map m in v) {
+          sb.write(m[nameParts[1]]);
+          sb.write(", ");
+        }
+        return sb.toString();
+      } else if (v is Map) {
+        return v[nameParts[1]];
+      }
+
+    } else {
+      var v = r[f];
+
+//      if (v is Map) {
+//        return "Map";
+//      } else if (v is List) {
+//        StringBuffer sb = new StringBuffer();
+//        for (var s in v) {
+//          sb.write(s.toString());
+//          sb.write(", ");
+//        }
+//        return sb.toString();
+//      } else {
+//
+//        v = firstNonNull(v, "");
+//
+//        if(v != '' && rs.numberFields.firstWhere((i) => i==f, orElse: () => null) != null){
+//          v = Utils.numberFormatNumber.format(double.parse(v.toString()));
+//        }
+
+
+        return v;
+//      }
+    }
+
+    String v = r[f];
+    if (v == null) {
+      return "";
+    }
+
+//    if(data.numberFields.firstWhere((i) => i==f, orElse: () => null) != null){
+//      v = Utils.numberFormatNumber.format(double.parse(v.toString()));
+//    }
+
+    return v;
+  }
+}

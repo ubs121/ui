@@ -1,0 +1,157 @@
+<!doctype html>
+
+<html lang="">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="generator" content="Polymer Starter Kit" />
+
+  <title>e-Book</title>
+  <!-- Place favicon.ico in the `app/` directory -->
+
+  <!-- Chrome for Android theme color -->
+  <meta name="theme-color" content="#2E3AA1">
+
+  <!-- Web Application Manifest -->
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Tile color for Win8 -->
+  <meta name="msapplication-TileColor" content="#3372DF">
+
+  <!-- Add to homescreen for Chrome on Android -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="application-name" content="ebook">
+  <link rel="icon" sizes="192x192" href="images/touch/chrome-touch-icon-192x192.png">
+
+  <!-- Add to homescreen for Safari on iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="ebook">
+  <link rel="apple-touch-icon" href="images/touch/apple-touch-icon.png">
+
+  <!-- Tile icon for Win8 (144x144) -->
+  <meta name="msapplication-TileImage" content="images/touch/ms-touch-icon-144x144-precomposed.png">
+
+  <!-- build:css styles/main.css -->
+  <link rel="stylesheet" href="styles/main.css">
+  <!-- endbuild-->
+
+  <!-- build:js bower_components/webcomponentsjs/webcomponents-lite.min.js -->
+  <script src="bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+  <!-- endbuild -->
+
+  <!-- will be replaced with elements/elements.vulcanized.html -->
+  <link rel="import" href="elements/elements.html">
+  <!-- endreplace-->
+
+  <!-- For shared styles, shared-styles.html import in elements.html -->
+  <style is="custom-style" include="shared-styles"></style>
+
+</head>
+
+<body unresolved class="fullbleed layout vertical">
+
+<template is="dom-bind" id="app">
+  <iron-a11y-keys target="[[]]" keys="left right"
+                    on-keys-pressed="arrowHandler"></iron-a11y-keys>
+
+  <!-- TODO: book_catalog.json файлыг indexeddb руу оруулах -->
+  <!-- ['_id', 'нэр',  'зохиогч', 'тухай', 'зураг', 'ангилал', 'огноо', 'формат', 'хавтас', 'файл', 'орчуулагч', 'хэл', '_pin']"
+  -->
+
+
+    <!-- Main Area -->
+    <div id="main" class="content">
+      <iron-pages attr-for-selected="data-route" selected="{{route}}">
+
+        <!-- book list -->
+        <section data-route="home">
+
+          <paper-toolbar id="main-toolbar">
+            <paper-icon-button icon="menu" on-tap="{{toggleToolbar}}">
+            </paper-icon-button>
+
+            <span>eBook</span>
+
+
+            <paper-input id="search"
+              label="  Ном хайх ..."
+              value="{{ data.searchText }}"
+              on-keypress="{{keypress}}"
+              flex autofocus></paper-input>
+
+            <paper-icon-button icon="search" on-click="find"></paper-icon-button>
+
+            <paper-toggle-button on-tap="filterByPin">
+              <iron-icon icon="erp-icons:pin"></iron-icon>
+            </paper-toggle-button>
+
+            <paper-icon-button icon="add-circle-outline" on-tap="add"
+              title="Та ч бас мэдлэг, туршлагаа хуваалцаарай!">
+            </paper-icon-button>
+
+          </paper-toolbar>
+
+          <template is="dom-if" if="{{menuOpen}}">
+              <div id="filter">
+                <ul class='search-filter'>
+                  <template repeat="{{c in categories}}">
+                    <li on-tap="filterByCategory" data-categ="{{c}}" style="background-color:{{ currentFilter==c ? '#aaa': '#eee'}}">
+                      {{ c }}
+                    </li>
+                  </template>
+                </ul>
+              </div>
+
+          </template>
+
+
+          <neon-animated-pages id="pager"
+            selected="{{currentPage}}"
+            transitions="{{transition}}">
+
+             <!-- placeholder for pages -->
+
+          </neon-animated-pages>
+
+          <paper-button on-tap="prevPage" class="left">
+            <iron-icon icon="arrow-back"></iron-icon>
+          </paper-button>
+
+          <paper-button on-tap="nextPage" class="right">
+            
+            <template is="dom-if" if="{{!loading}}">
+              <iron-icon icon="arrow-forward"></iron-icon>
+            </template>
+
+            <template is="dom-if" if="{{loading}">
+              <paper-spinner active></paper-spinner>
+            </template>
+
+          </paper-button>
+
+        </section>
+
+        <!-- book reader -->
+        <section data-route="read">
+        <!-- <book-reader></book-reader> -->
+        </section>
+
+      </iron-pages>
+    </div>
+
+  <!-- status message -->
+  <paper-toast id="toast">
+        <span class="toast-hide-button" role="button" tabindex="0" onclick="app.$.toast.hide()">Ok</span>
+    </paper-toast>
+
+</template>
+
+
+<script src="scripts/db.js"></script>
+<script src="scripts/app.js"></script>
+
+</body>
+</html>

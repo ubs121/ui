@@ -1,0 +1,28 @@
+{
+  "name": "br-select-box",
+  "version": "1.0.6",
+  "authors": [
+    "cbfranca <cleidsonbf@gmail.com>",
+    "marcelo-ribeiro <marceloribeiromidia@gmail.com>"
+  ],
+  "description": "Modal built with polymer",
+  "main": "br-modal.html",
+  "keywords": [
+    "webcomponents",
+    "polymer",
+    "bedrock",
+    "modal"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+   "dependencies": {
+    "bedrock-base": "~1.0.0",
+    "br-icons": "~1.0.0"
+  }
+}

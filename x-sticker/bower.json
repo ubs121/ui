@@ -1,0 +1,28 @@
+{
+  "name": "x-sticker",
+  "version": "1.0.0",
+  "authors": [
+    "ubs121 <ubs121@gmail.com>"
+  ],
+  "description": "An element providing a solution to no problem in particular.",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "sticker"
+  ],
+  "main": "x-sticker.html",
+  "license": "LICENSE.txt",
+  "homepage": "https://github.com/ubs121/x-sticker",
+  "ignore": [
+    "/.*",
+    "/test/",
+    "/demo/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.1.0"
+  },
+  "devDependencies": {
+    "web-component-tester": "*"
+  }
+}

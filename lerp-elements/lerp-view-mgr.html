@@ -1,0 +1,689 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="view-mgr">
+<template>
+  <style>
+    core-toolbar {
+      background: #FFF url('sug1.png') right bottom no-repeat;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .btn-group {
+      margin: 0 8px;
+      border-left: 1px solid #ccc;
+      display: inline-block;
+    }
+    excel-button::shadow paper-button {
+      border: 1px solid #ccc !important;
+    }
+    paper-button::shadow .button-content, excel-button::shadow paper-button::shadow .button-content{
+      padding: 0;
+    }
+    .btn-group paper-button, excel-button::shadow paper-button{
+      border: 1px solid #ccc;
+      padding: 4px 9px;
+      margin: 0;
+      min-width: 0;
+      float: left;
+      border-radius: 0;
+      border-left: none;
+      background: #FFF;
+      line-height: 24px;
+      font-size: 13px;
+    }
+    .btn-group paper-button core-icon, excel-button::shadow paper-button core-icon{
+      width: 18px;
+      height: 18px;
+      padding: 3px;
+    }
+    .btn-group paper-button::shadow #ripple {
+      color: #4285f4;
+    }
+    paper-input-decorator::shadow x-search::shadow core-toolbar::shadow ::-webkit-input-placeholder {
+      font-size: 12px;
+      color: #888;
+    }
+
+    core-toolbar::shadow x-search::shadow paper-input-decorator::shadow :-moz-placeholder { /* Firefox 18- */
+      font-size: 12px;
+      color: #888;
+    }
+
+    core-toolbar::shadow x-search::shadow paper-input-decorator::shadow ::-moz-placeholder {  /* Firefox 19+ */
+      font-size: 12px;
+      color: #888;
+    }
+
+    core-toolbar::shadow x-search::shadow paper-input-decorator::shadow :-ms-input-placeholder {
+      font-size: 12px;
+      color: #888;
+    }
+
+    core-toolbar::shadow x-search::shadow paper-input-decorator::shadow .focused-underline,
+    .cursor {
+      background-color: #4285f4;
+    }
+
+    .main {
+      padding: 20px;
+    }
+
+    .limit-selector x-select::shadow select {
+      width: auto;
+      margin-bottom: 10px;
+      padding: 5px;
+    }
+    .limit-selector {
+      float: right;
+    }
+    .limit-selector x-select, .limit-selector span {
+      float:left;
+    }
+
+    paper-input-decorator::shadow .error-icon {
+      display: none;
+    }
+  </style>
+
+  <paper-toast id="statusMsg" text=""></paper-toast>
+
+  <!-- toolbar -->
+  <core-toolbar>
+    <div class="btn-group">
+      <template if="{{canCreate && !editing && data.name!='Ирц' && data.id!='rsEmpPlan'}}">
+        <paper-button title="Үүсгэх" id="buttonAdd" on-tap="{{create}}" raise>
+          <core-icon icon="add"></core-icon>Үүсгэх
+        </paper-button>
+      </template>
+      <template if="{{canEdit && !editing && data.id!='rsEmpPlan'}}">
+        <paper-button title="Засах" on-tap="{{edit}}">
+          <core-icon icon="create"></core-icon>Засах
+        </paper-button>
+      </template>
+      <template if="{{canDelete && !editing && data.id!='rsEmpPlan'}}">
+        <paper-button title="Устгах" on-tap="{{delete}}">
+          <core-icon icon="delete"></core-icon>Устгах
+        </paper-button>
+      </template>
+      <template if="{{canSave && editing}}">
+        <paper-button title="Хадгалах" on-tap="{{save}}">
+          <core-icon icon="save"></core-icon>Хадгалах
+        </paper-button>
+      </template>
+      <template if="{{canCancel && editing}}">
+        <paper-button title="Болих" on-tap="{{cancel}}">
+          <core-icon icon="close"></core-icon>Болих
+        </paper-button>
+      </template>
+      <template if="{{!editing && canCheck}}">
+        <paper-button title="Хянах" on-tap="{{check}}">
+          <core-icon icon="done"></core-icon>Хянах
+        </paper-button>
+      </template>
+      <template if="{{!editing && canApprove}}">
+        <paper-button title="Батлах" on-tap="{{approve}}">
+          <core-icon icon="done-all"></core-icon>Батлах
+        </paper-button>
+      </template>
+    </div>
+
+    <!--<div flex id="search">
+      <x-search data="{{data}}" view="{{currentView}}" dropTo="{{ $['main'] }}" ></x-search>
+      <paper-input value="{{data.searchText}}" on-keypress="{{keypress}}" label="хайлт..."
+        autofocus>
+      </paper-input>
+   </div>-->
+
+    <!--
+    <div class="btn-group">
+      <button class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+        More
+        <span class="caret"></span>
+      </button>
+      <ul class="dropdown-menu">
+        <li><a href="#/test">Dropdown link</a></li>
+        <li><a href="#/test2">Dropdown link</a></li>
+      </ul>
+    </div>
+    -->
+    <div flex></div>
+    <div style="float:right; margin-top: 5px;">
+        <template if="{{ currentView =='list' && isHR }}">
+          <excel-button enabled table="{{exportData}}" data = "{{data}}"
+            style="float: left">
+            Excel
+          </excel-button>
+        </template>
+
+       <div class="btn-group">
+        <!-- бичлэгийн дугаар -->
+        <paper-button noink>
+            {{ (data.limit * data.page + data.index)}} / {{data.total}}
+          </paper-button>
+
+
+        <paper-button title="Өмнөх бичлэг" on-tap="{{movePrev}}">
+          <core-icon icon="chevron-left"></core-icon>
+        </paper-button>
+
+        <paper-button title="Дараах бичлэг" on-tap="{{moveNext}}">
+          <core-icon icon="chevron-right"></core-icon>
+        </paper-button>
+
+      </div>
+
+      <div class="btn-group">
+        <template if="{{list}}">
+          <paper-button title="Жагсаалт" on-tap="{{toggleView}}"  data-msg="list">
+            <core-icon icon="view-list"></core-icon>
+          </paper-button>
+        </template>
+        <template if="{{form}}">
+          <paper-button title="Форм" on-tap="{{toggleView}}"  data-msg="form">
+            <core-icon icon="picture-in-picture"></core-icon>
+          </paper-button>
+        </template>
+        <template if="{{kanban}}">
+          <paper-button title="Карт" on-tap="{{toggleView}}"  data-msg="kanban">
+            <core-icon icon="view-module"></core-icon>
+          </paper-button>
+        </template>
+        <template if="{{chart}}">
+          <paper-button title="Диаграм" on-tap="{{toggleView}}"  data-msg="chart">
+            <core-icon icon="assessment"></core-icon>
+          </paper-button>
+        </template>
+        <template if="{{calendar}}">
+          <paper-button title="Календар" on-tap="{{toggleView}}"  data-msg="calendar">
+            <core-icon icon="today"></core-icon>
+          </paper-button>
+        </template>
+      </div>
+    </div>
+  </core-toolbar>
+  <div class="main" id="main">
+  <!--<template if="{{ currentView!='form' }}">
+    <div id="advanced_search" style="display: none">
+        <x-search data="{{data}}"></x-search>
+    </div>
+  </template>-->
+
+  <!-- view container -->
+  <div id="view" on-item="{{itemSelect}}">
+
+  </div>
+
+  <template if="{{ data.empty && !data.loading}}">
+    <p>Өгөгдөл байхгүй эсвэл хайлтын нөхцөлд тохирох өгөгдөл олдохгүй байна!</p>
+  </template>
+  <template if="{{ data.total > 0 && (currentView=='list' || currentView=='kanban') }}">
+    <div layout horizontal style="clear: left">
+      <div flex>
+        <x-pager style="clear:left;display:block" on-page={{movePage}}
+        current="{{data.page}}" total="{{data.total}}" pageSize="{{data.limit}}" showTotal="true"></x-pager>
+      </div>
+      <div>
+          <x-select
+             label="Хуудаслалт"
+             value="25"
+             editing = "true"
+             options="['10', '25', '50', '100', '200', 'бүгд']"
+             on-change="{{ pageLimitChanged }}">
+          </x-select>
+      </div>
+    </div>
+  </template>
+
+  </div>
+</template>
+
+</dom-module>
+
+
+
+
+/**
+ * Олон дэлгэц удирдах компонент
+ */
+@CustomTag("view-mgr")
+class ViewMgr extends PolymerElement {
+
+//  @published String id = '';
+  @published String pageTitle = '';
+
+  // model
+  @published RecordSet data;
+
+  @published String currentView = ''; // views =form|tree|kanban|graph|chart
+  @published String form;
+  @published String list;
+  @published String kanban;
+  @published String chart;
+  @published String calendar;
+  @published String special;
+
+  @observable bool validation = true;
+  @observable bool canCreate;
+  @observable bool canEdit;
+  @observable bool canSave;
+  @observable bool canCheck;
+  @observable bool canApprove;
+  @observable bool canDelete;
+  @observable bool canCancel;
+  @observable bool editing;
+  @observable bool isHR;
+  //@published bool editable = true;
+
+  @published bool embedded = false;
+
+  @observable var mainCon;
+
+  PaperToast get statusMsg => $["statusMsg"];
+
+
+  // view агуулагчид
+  Element _viewHost;
+  XForm _formElem = new Element.tag('x-form');
+  XList _listElem;
+  XKanban _kanbanElem;
+  XChart _chartElem;
+  XCalendar _calElem;
+
+
+  @observable
+  TableElement exportData;
+
+  // TODO: ViewMgr үүсгэх үед data дамжуулах боломжтой болгох
+  factory ViewMgr([RecordSet data]) {
+    return null;
+  }
+
+  ViewMgr.created() : super.created() {
+
+  }
+
+  ready() {
+    super.ready();
+
+    _viewHost = $["view"];
+    _toggleView();
+  }
+
+
+  attached() {
+    super.attached();
+  }
+
+  // өгөгдөл солигдсон
+  dataChanged(old) {
+    if (data == null) {
+      return;
+    }
+
+    // өгөгдөл ачаалах
+    if (data.empty && !data.loading) {
+      data.find();
+    }
+
+    isHR = data.context.roles.contains("hr.admin") || data.context.roles.contains("hr.contract") || data.context.roles.contains("hr.training") || data.context.roles.contains("hr.job") || data.context.roles.contains("hr.salary") || data.context.roles.contains("hr.staff");
+
+    if (data.context.perms.contains("${data.name}+")) {
+      canCreate = canEdit = true;
+      canSave = canCancel = true;
+    }
+
+    if (data.context.perms.contains("${data.name}%") && (data.id == "rsAttadm" || data.id == "rsDeptTimetable" || data.id == "rsBsc")) { // Ажилтаны хуваарь гэсэн ирцийн админд зориулсан дэлгэц нь мөн
+      //Ажилтан recordset-г ашигладаг тул тус нөхцлийг ашиглав
+      canEdit = true;
+      canCreate = false;
+      canSave = canCancel = true;
+    }
+
+    if (data.context.perms.contains("${data.name}-") && data.id != 'rsAttadm') {
+      canDelete = true;
+    }
+
+    if ((data.name == 'Ирц') && data.context.matchRole(['timetable'])) canCheck = true;
+
+    if ((data.name == 'Ирц' || data.name == 'Цагийн_хуваарь') && data.context.matchRole(['att.approver'])) canApprove = true;
+
+    if (data.name == 'Role' && data.context.hasRole("admin") || data.context.hasRole("hr.admin")) {
+      canCreate = canEdit = true;
+      canSave = canCancel = true;
+    }
+
+    if (data.name == 'User' && data.context.hasRole("admin") || data.context.hasRole("hr.admin")) {
+      canCreate = canEdit = true;
+      canSave = canCancel = true;
+    }
+
+  }
+
+
+  // view солих
+  _toggleView() {
+    _viewHost.children.clear(); // өмнөх дэлгэцүүдийг цэвэрлэх
+
+    window.scrollTo(0, 0); // дэлгэц солигдох бүрт дээш скролл хийнэ
+
+    if (currentView == 'form') {
+      // мөрийг бүтнээр нь татах
+      data.findOne({
+        "_id": data.current['_id']
+      });
+
+      _formElem = new Element.tag(form);
+      //_formElem = new XForm.custom(form, data, _formElem);
+      // FIXME: элемент үүссэн дариуд data.context=null байна, дараах мөр дээр утгатай болж байна
+      _formElem.data = data;
+      _viewHost.children.add(_formElem);
+
+    } else {
+      editing = false;
+
+      if (currentView == 'list') {
+        _listElem = new Element.tag(list);
+        _listElem.embedded = embedded;
+        _listElem.data = data;
+        _listElem.special = special;
+        exportData = _listElem.exportData;
+        _viewHost.children.add(_listElem);
+      } else if (currentView == 'kanban') {
+        _kanbanElem = new Element.tag(kanban);
+        _kanbanElem.data = data;
+        _viewHost.children.add(_kanbanElem);
+      } else if (currentView == 'chart') {
+        _chartElem = new Element.tag(chart);
+        _chartElem.data = data;
+        _viewHost.children.add(_chartElem);
+      } else if (currentView == 'calendar') {
+        _calElem = new Element.tag(calendar);
+        _calElem.data = data;
+        _viewHost.children.add(_calElem);
+      }
+    }
+  }
+
+  /// нэг обект сонгосон үед
+  itemSelect(Event e, int pos, Node target) {
+    cancelEvent(e);
+
+    print("on-item event! ${pos} ");
+
+    data.setCurrent(pos);
+
+    currentView = 'form';
+
+    _toggleView();
+
+  }
+
+  /// view солих
+  toggleView(Event e, var detail, Node target) {
+    e.preventDefault();
+
+    currentView = toObservable((target as Element).attributes['data-msg']);
+    _toggleView();
+  }
+
+
+  keypress(KeyboardEvent e, var detail, Element target) {
+
+
+    if (e.keyCode == KeyCode.ENTER) {
+      e.preventDefault();
+
+      target.blur(); // FIXME: ингэхгүй бол textSearch өөрчлөгдөхгүй байна
+      target.focus();
+
+      data.find();
+    }
+  }
+
+  cancelEvent(Event e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  movePrev(Event e, var detail, Node target) {
+    cancelEvent(e);
+    data.prev();
+  }
+
+  moveNext(Event e, var detail, Node target) {
+    cancelEvent(e);
+    data.next();
+  }
+
+  movePrevPage(Event e, var detail, Node target) {
+    cancelEvent(e);
+    data.prevPage();
+  }
+
+  moveNextPage(Event e, var detail, Node target) {
+    cancelEvent(e);
+    data.nextPage();
+  }
+
+  movePage(Event e, int page, Node target) {
+    cancelEvent(e);
+    data.movePage(page);
+  }
+
+  create(Event e, var detail, Node target) {
+    cancelEvent(e);
+
+    data.create();
+    edit(e, detail, target);
+  }
+
+  edit(Event e, var detail, Node target) {
+    cancelEvent(e);
+
+    // form горимд шилжих
+    if (currentView != 'form') {
+      currentView = 'form';
+      _toggleView();
+    }
+
+    _formElem.editing = editing = true;
+  }
+
+  save(Event e, var detail, Node target) {
+    cancelEvent(e);
+
+    if (currentView == 'form') {
+      validation = _formElem.validate();
+    }
+
+    if (validation == true) {
+
+      if (_formElem.dateValidation()) {
+
+        data.save().then((id) {
+          fire('save', detail: detail);
+
+          statusMsg.text = "Амжилттай хадгаллаа ${data.name}: ${id}";
+          statusMsg.show();
+
+          if (_formElem != null) {
+            _formElem.editing = editing = false;
+          }
+
+          // FIXME: энд өгөгдлийг дахин ачаалж байгаа нь буруу !!!
+          //data.load(); // шинээр нэмэгдсэн мөрийг recordset-д авах
+
+        }).catchError((e) {
+          window.alert("Хадгалахад алдаа гарлаа! ${e}");
+        });
+      }
+    }
+  }
+
+  /**
+   * data.limit өөрчлөгдсөн үед
+   */
+  pageLimitChanged(Event e, var detail, Element target) {
+    cancelEvent(e);
+
+    int newLimit = 25;
+    if (detail.toString() == "бүгд") {
+      newLimit = 1000000;
+    } else {
+      newLimit = int.parse(detail.toString().trim());
+    }
+
+    data.limit = newLimit;
+    data.load();
+  }
+
+
+
+  /**
+   * @23f44066, 2014-12-03. rowId, switch() нэмж x-list.delete ашиглах болгов
+   */
+  delete(Event e, var detail, Node target) {
+    cancelEvent(e);
+
+    String rowId = data.current['нэр'];
+    if (rowId == null) rowId = data.current['_id'];
+    if (data.name == 'Ирц' || data.name == 'Цагийн_хуваарь') rowId = "${data.current['ажилтан_нэр']} - ${data.current['огноо']}";
+
+    // ямар view-д байгаагаас хамаарч устгах үйлдлийг гүйцэтгэнэ
+    switch (currentView) {
+      case 'form':
+        // сонгосон байгаа мөрийг устгах
+        if (window.confirm("${data.name}-с   '${rowId}'-г   устгах уу?")) {
+          data.delete();
+          //fire("delete");
+
+          if (currentView == 'form') {
+            currentView = 'list'; // list дэлгэц харуулах
+
+            _toggleView();
+          }
+        }
+        break;
+
+      case 'list':
+        // өөр хуудсанд байгаа checkbox-уудыг устгаж байна
+        _listElem.checkList.removeWhere((i) => ((i.row > (data.page + 1) * data.limit) || (i.row <= data.page * data.limit)));
+        // хэрвээ checkbox-с сонгосон бол x-list-н устгах аргыг дуудна
+        if (_listElem.checkList.length > 0) _listElem.delete();
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  /**
+   * FIXME: тусгайлсан компонентод зориулсан код энд байх нь буруу!
+   * @author: 23f44066, 2014-12-03.
+   *
+   * Ирц, цагийн хуваарийг хянах
+   */
+  check(Event e, var detail, Node target) {
+    cancelEvent(e);
+
+    String rowId = "${data.current['ажилтан_нэр']} - ${data.current['огноо']}";
+
+    switch (currentView) {
+      case 'form':
+        // зөвхөн хянаагүй ирцийг л хянана
+        if (data.current['төлөв'] == 'хянаагүй') {
+          if (window.confirm("${rowId}-г хянах уу?")) {
+            if (data.name == 'Ирц') {
+              data.current['хянасан_ажилтан'] = data.context.userId;
+              data.current['хянасан_огноо'] = new DateTime.now().toString().substring(0, 19);
+              data.current['баталсан_ажилтан'] = '';
+              data.current['баталсан_огноо'] = '';
+            }
+            data.current['төлөв'] = 'хянасан';
+
+            data.save().then((_) {
+              data.load();
+              _listElem.checkList.clear();
+              _listElem.selectAll = false;
+            });
+          }
+        }
+        break;
+
+      case 'list':
+        // сheckbox сонгосон байгаа бол
+        if (_listElem.checkList.length > 0) _listElem.check();
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  /**
+    * @author: 23f44066, 2014-12-03.
+    *
+    * Ирц, цагийн хуваарийг батлах
+   */
+  approve(Event e, var detail, Node target) {
+    cancelEvent(e);
+
+    String rowId = "${data.current['ажилтан_нэр']} - ${data.current['огноо']}";
+
+    switch (currentView) {
+      case 'form':
+        // зөвхөн хянасан ирцийг л батлана
+        if (data.current['төлөв'] == 'хянасан') {
+          if (window.confirm("${rowId}-г батлах уу?")) {
+            if (data.name == 'Ирц') {
+              data.current['баталсан_ажилтан'] = data.context.userId;
+              data.current['баталсан_огноо'] = new DateTime.now().toString().substring(0, 19);
+            }
+            data.current['төлөв'] = 'баталсан';
+
+            data.save().then((_) {
+              data.load();
+              _listElem.checkList.clear();
+              _listElem.selectAll = false;
+            });
+          }
+        }
+        break;
+
+      case 'list':
+        // сheckbox сонгосон байгаа бол
+        if (_listElem.checkList.length > 0) _listElem.approve();
+        break;
+
+      default:
+        break;
+    }
+  }
+
+  cancel(Event e, var detail, Node target) {
+    cancelEvent(e);
+
+    if (_formElem != null) {
+      _formElem.editing = editing = false;
+
+
+      // шинэ бичлэг cancel хийж байна
+      if (!data.current.containsKey("_id")) {
+
+        // устгах
+        data.delete();
+
+        // олноор харах горимд шилжих
+        if (currentView == 'form') {
+          if (list != null) {
+            currentView = 'list';
+          } else if (kanban != null) {
+            currentView = 'kanban';
+          }
+        }
+
+        _toggleView();
+      }
+    }
+  }
+}

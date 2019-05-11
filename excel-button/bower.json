@@ -1,0 +1,30 @@
+{
+  "name": "excel-button",
+  "version": "0.0.1",
+  "authors": [
+    "ubs121 <ubs121@gmail.com>"
+  ],
+  "description": "An element providing a solution to no problem in particular.",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "excel",
+    "export"
+  ],
+  "main": "lerp-elements.html",
+  "license": "LICENSE.txt",
+  "homepage": "https://github.com/ubs121/excel-button/",
+  "ignore": [
+    "/.*",
+    "/test/",
+    "/demo/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.1.2",
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "web-component-tester": "*"
+  }
+}

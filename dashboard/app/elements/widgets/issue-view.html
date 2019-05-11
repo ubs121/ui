@@ -1,0 +1,136 @@
+<!-- a bar chart reflecting number of reported issues over a period of time -->
+
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/google-chart/google-chart.html">
+<link rel="import" href="../widget-behavior.html">
+<link rel="import" href="data-view.html">
+
+<dom-module id="issue-view">
+<style>
+ :host {
+    display: block;
+    width: 100%;
+    min-width: 350px;
+ }
+
+ .toolbar {
+  width: 100%;
+  vertical-align: middle;
+ }
+
+ .tool {
+  margin-left: 5px;
+ }
+ 
+</style>
+<template>
+    <h3>{{label}}</h3>
+
+    <div class="toolbar layout horizontal" role="toolbar">
+  	  <div class="tool">
+        <label for="filterVal">Filter: </label>
+        <input id="filterVal" type="text" value="{{filterVal::input}}" placeholder="type to filter">  
+      </div>
+      
+      <div class="tool">
+        <label for="sortField">Sort: </label>
+        <select id="sortField" on-change="_sort">
+          <template is="dom-repeat" items="{{columns}}" index-as="i">
+          <option value="{{i}}">{{item}}</option>
+          </template>
+        </select>
+      </div>
+
+      <span class="flex"></span>
+      
+      <div class="tool">
+        <span>&nbsp;</span>
+        <button on-tap="_delete" class="tool bottom" title="Delete selected items">Delete</button>
+      </div>
+    </div>
+
+    <data-view header='{{columns}}' data='{{data}}' filter="{{filterVal}}">
+    </data-view>
+
+    <p>{{error}}</p>
+	
+</template>
+
+<script>
+(function() {
+  'use strict';
+  
+  Polymer({
+    is: 'issue-view',
+    behaviors: [WidgetBehavior],
+
+    ready: function(e) {
+      this.columns = ["Customer", "Email", "CreatedDate", "Description", "Employee", "Status", "ClosedDate"];
+      
+      this.sortColumn = 0;
+    },
+
+    // override default method
+    getData: function(e) {
+      var that = this;
+      fetch(this.dataUrl).then(function(response) {
+        return response.text();
+      }).then(function(txt) {
+          that.data = that.parseData(txt);
+      });
+
+    },
+
+    _dataChanged: function(e) {
+      if (!this.data || this.data.constructor !== Array || this.data.length == 0) {
+        return;
+      }
+    },
+
+    // converts text (csv, tsv) data into array
+    parseData: function(txt) {
+        var re = /\r|\n/;
+        var lines = txt.split(re);
+        var headerLine = lines[0];
+        var fields = headerLine.split(/[,|;\t]/);
+
+        var rows = new Array();
+
+        for (var i = 1; i < lines.length; i++) {
+            var line = lines[i];
+
+            if (line.length == 0) {
+              continue;
+            }
+
+            var values = line.trim().split(/[,|;\t]/);
+            var cols = [];
+
+            for (var j = 0; j < values.length; j++) {
+              cols.push( values[j].trim() );
+            }
+
+            rows.push(cols);
+
+        }
+
+        return rows;
+    },
+
+    _delete: function(e) {
+      var dv = this.querySelector('data-view');
+
+      if (dv.selected.length > 0 && window.confirm('Delete selected rows ?')) {
+        dv.delete();
+      }
+    },
+
+    _sort: function(e) {
+      var dv = this.querySelector('data-view');
+      dv.sortColumn = e.target.selectedIndex;
+    }
+
+  });
+})();
+</script>
+</dom-module>

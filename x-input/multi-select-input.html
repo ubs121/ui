@@ -1,0 +1,85 @@
+<meta charset="utf-8">
+
+<link rel="import" href="../polymer/polymer.html">
+
+<polymer-element name="multi-select-input" attributes="options, values">
+
+<template>
+<style>
+ul {
+	padding: 10px;
+	list-style-type: none;
+}
+
+li {
+	display: inline;
+	padding: 2px;
+	margin: 2px;
+	border: 1px solid silver;
+	border-radius: 3px;
+}
+
+.remove {
+	display: inline-block;
+	border-radius: 50%;
+	background: silver;
+	width: 20px;
+	height: 50%;
+	text-align: center;
+	margin: 0;
+	padding: 0;
+}
+
+input {
+    font-size: inherit;
+    border: none;
+    margin-left: 5px;
+    width: auto;
+    padding: 0;
+    background-color: transparent;
+}
+
+input:focus {
+    outline: none;
+}
+</style>
+<ul id="vals">
+	<template repeat="{{v in values}}">
+	<li>{{v}} </li>
+	<!--<span class="remove">x</span>-->
+	</template>
+
+	<input list="opts" on-change="{{addValue}}" value="{{value}}" autofocus>
+</ul>
+
+<datalist id="opts">
+	<template repeat="{{o in options}}">
+	<option>{{o}}</option>
+	</template>
+</datalist>
+
+</template>
+
+<script type="text/javascript">
+	Polymer('multi-select-input', {
+		value: '',
+
+		ready: function() {
+			console.log("ready");
+		},
+
+		created: function() {
+			this.options = ["red", "blue"];
+			this.values = ["one", "two"];
+		},
+
+		addValue: function(event,detail,target) {
+			// TODO: давхардыг шалгах
+			this.values.push(this.value);
+			this.value = "";
+
+			this.fire("change", this.values);
+		}
+	});
+</script>
+</polymer-element>

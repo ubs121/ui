@@ -1,0 +1,30 @@
+{
+  "name": "survey",
+  "version": "1.0.0",
+  "authors": [
+    "ubs121",
+    "odkhuu"
+  ],
+  "description": "Generic survey component",
+  "keywords": [
+    "web-component",
+    "web-components",
+    "polymer",
+    "rating"
+  ],
+  "main": "survey.html",
+  "license": "http://polymer.github.io/LICENSE.txt",
+  "homepage": "https://github.com/ubs121/survey",
+  "ignore": [
+    "/.*",
+    "/test/",
+    "/demo/"
+  ],
+  "dependencies": {
+    "polymer": "Polymer/polymer#^1.2.3",
+    "iron-elements": "PolymerElements/iron-elements#^1.0.0"
+  },
+  "devDependencies": {
+    "web-component-tester": "*"
+  }
+}

@@ -1,0 +1,146 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../widget-behavior.html">
+
+
+<style>
+	:host {
+        display: block;
+        width: 100%;
+    }
+    
+	.axis path,
+	.axis line {
+	  fill: none;
+	  stroke: #000;
+	  shape-rendering: crispEdges;
+	}
+
+	.x.axis path {
+	  display: none;
+	}
+
+	.line {
+	  fill: none;
+	  stroke: steelblue;
+	  stroke-width: 1.5px;
+	}
+
+	.svg-container {
+	    width: 100%;
+	}
+	.svg-content-responsive {
+	    display: inline-block;
+	}
+</style>
+
+<dom-module id="line-chart">
+
+<template>
+	<h3>{{label}}</h3>
+	<p>{{error}}</p>
+	<svg  id="chart" width="960" height="600"></svg> 
+</template>
+
+<script>
+(function() {
+  'use strict';
+  
+  Polymer({
+    is: 'line-chart',
+    behaviors: [WidgetBehavior],
+
+    properties: {
+    	labelX: String,
+    	labelY: String
+    },
+
+    _dataChanged: function(e) {
+    	if (!this.data || this.data.constructor !== Array || this.data.length == 0) {
+			return;
+    	}
+
+    	console.log("line-chart data changed !");
+    	
+    	this.render();
+
+    },
+
+    // see: http://bl.ocks.org/mbostock/3883245
+    render: function() {
+    	this.clear();
+
+		var aspect = 960 / 600,
+    		chart = d3.select(this.$.chart);
+
+    	var targetWidth = this.getBoundingClientRect().width || 960;
+		var targetHeight = targetWidth / aspect;
+
+    	var margin = {top: 20, right: 20, bottom: 30, left: 40},
+		    width = targetWidth - margin.left - margin.right,
+		    height = targetHeight - margin.top - margin.bottom;
+
+		var x = d3.scale.ordinal()
+            .rangeRoundBands([0, width], 0.1);
+
+		var y = d3.scale.linear()
+		    .range([height, 0]);
+
+		var xAxis = d3.svg.axis()
+		    .scale(x)
+		    .orient("bottom");
+
+		var yAxis = d3.svg.axis()
+		    .scale(y)
+		    .orient("left");
+
+		var line = d3.svg.line()
+		    .x(function(d) { return x(d.month); })
+		    .y(function(d) { return y(d.revenue); });
+
+		var svg = d3.select(this.$.chart)
+		    .attr("width", width + margin.left + margin.right)
+		    .attr("height", height + margin.top + margin.bottom)
+		    .attr("viewbox", " 0 0 " + width + " " + height)
+		    .attr("preserveAspectRatio", "xMidYMid meet")
+		    .classed("svg-container", true)
+		    .classed("svg-content-responsive", true)
+		    .append("g")
+		    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+		// FIXME: sometimes this.data is not array
+	    x.domain(this.data.map(function (d) {return d.month; }));
+	    y.domain(d3.extent(this.data, function(d) { return d.revenue; }));
+
+	    svg.append("g")
+	      .attr("class", "x axis")
+	      .attr("transform", "translate(0," + height + ")")
+	      .call(xAxis);
+
+	    svg.append("g")
+	      .attr("class", "y axis")
+	      .call(yAxis)
+	      .append("text")
+	      .attr("transform", "rotate(-90)")
+	      .attr("y", 6)
+	      .attr("dy", ".71em")
+	      .style("text-anchor", "end")
+	      .text(this.labelY);
+
+	    svg.append("path")
+	      .datum(this.data)
+	      .attr("class", "line")
+	      .attr("d", line);
+
+		
+    },
+
+    clear: function(e) {
+      while (this.$.chart.firstChild) {
+        this.$.chart.removeChild(this.$.chart.firstChild);
+      }
+    }
+
+  });
+})();
+</script>
+</dom-module>

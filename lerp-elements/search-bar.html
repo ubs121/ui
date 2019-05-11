@@ -1,0 +1,59 @@
+<meta charset="UTF-8">
+
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/core-field/core-field.html">
+<link rel="import" href="../bower_components/core-icon-button/core-icon-button.html">
+
+<link rel="import" href="../bower_components/core-item/core-item.html">
+
+<link rel="import" href="query-builder.html">
+<link rel="import" href="cw-autosize-input.html">
+
+<dom-module id="search-bar" >
+    <template>
+        <link rel="stylesheet" href="../bower_components/font-awesome/css/font-awesome.min.css">
+        <link rel="stylesheet" type="text/css" href="search-bar.css">
+
+        <core-icon-button on-tap="{{toggleCypher}}" tool="" icon="text-format"></core-icon-button>
+
+        <core-field>
+
+            <template if="{{mode=='simple'}}">
+                <template repeat="{{ c in clauses }}">
+                <div class="clause">
+                    <select value="{{c.model}}">
+                        <option template repeat="{{n in nodes}}">{{n}}</option>
+                    </select>
+                    <input is="cw-autosize-input" type="text" inputValue="{{c.filter}}" placeholder="нөхцөл">
+                </div>
+                </template>
+            </template>
+
+            <template if="{{mode=='cypher'}}">
+                <div class="clause">
+                    <input type="text" value="" style="width: 500px; height: 30px;" placeholder="cypher команд">
+                </div>
+            </template>
+            <!--
+            <query-builder id="qb" model="{{model}}"></query-builder>
+-->
+
+        </core-field>
+
+        <template if="{{mode=='simple'}}">
+            <core-icon-button on-tap="{{addClause}}"><i class="fa fa-plus-circle"></i></core-icon-button>
+        </template>
+
+        <core-icon-button icon="search" on-tap="{{find}}"></core-icon-button>
+
+        <!--
+        <ul id="opts" class="dropdown-menu" style="top: 69px; left: 19px; display: none">
+            <li class=""><a href="#" on-click="{{selectItem}}">Test</a></li>
+            <li><a href="#" on-click="{{selectItem}}">Name</a></li>
+        </ul>
+        -->
+
+    </template>
+
+    <script src="search-bar.js"></script>
+</dom-module>

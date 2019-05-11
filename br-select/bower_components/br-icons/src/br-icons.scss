@@ -1,0 +1,43 @@
+:host {
+  display: inline-flex;
+  align-items: center;
+  fill: currentColor;
+
+  &.icon__spin {
+    animation: spin 1s infinite linear;
+  }
+}
+
+.icon__sm {
+  --iron-icon-height: 16px;
+  --iron-icon-width: 16px;
+}
+
+.icon__md {
+  --iron-icon-height: 24px;
+  --iron-icon-width: 24px;
+}
+
+.icon__lg {
+  --iron-icon-height: 32px;
+  --iron-icon-width: 32px;
+}
+
+.icon__2lg {
+  --iron-icon-height: 48px;
+  --iron-icon-width: 48px;
+}
+
+@keyframes spin {
+  0% {
+    // opacity: 1;
+    transform: rotate(0deg);
+  }
+  // 50% {
+  //   opacity: 0.3;
+  // }
+  100% {
+    // opacity: 1;
+    transform: rotate(359deg);
+  }
+}

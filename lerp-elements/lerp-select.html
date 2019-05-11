@@ -1,0 +1,606 @@
+<!-- x-select2-->
+<dom-module id="x-select">
+<template>
+<style>
+      @media print {
+        paper-input-decorator::shadow .label-text, .label-text {color: #000 !important}
+        select {color: #333 !Important}
+        paper-input-decorator input {color: #333 !important;}
+      }
+      :host {width: 100%;font-family: calibri, Arial;}
+      select {padding-bottom: 2px; border: none;border-bottom: 1px solid #757575;background: none;margin: 0; width: 100%; font-size: 13px;font-family: calibri; color: #333;}
+      paper-input-decorator {font-size: 13px;width: 100%; padding: 0;}
+      paper-input-decorator input {margin-top: 0 !important;line-height: 17px !important}
+      paper-input-decorator::shadow .input-body {height: 21px;}
+      select:focus {outline: none}
+      .floated-label {height: 21px;}
+      input:invalid, textarea:invalid, select:invalid {border-bottom-color: #d34336 !important}
+      paper-input-decorator::shadow .label-text, .label-text {font-size: 12px; color: #4285f4; overflow: hidden;text-overflow: ellipsis;white-space: nowrap;display: inline-block;max-width: 100%;-moz-transform-origin: 0% 0%;-webkit-transform-origin: 0% 0%;transform-origin: 0% 0%;font-family: calibri, Arial;}
+      .oe_searchview_facets * {
+        vertical-align: top;
+        display: inline-block;
+        line-height: 24px;
+      }
+      .oe_searchview_facets .oe_searchview_facet .oe_facet_values {
+        background: none repeat scroll 0% 0% #F0F0FA;
+        border-radius: 0px 3px 3px 0px;
+      }
+      .oe_searchview_facets .oe_searchview_facet .oe_facet_remove {
+        position: absolute;
+        top: 3px;
+        right: 3px;
+        color: #8786B7;
+        line-height: 8px;
+        width: 12px;
+        height: 12px;
+        padding-top: 1px;
+        text-align: center;
+        font-weight: bold;
+        cursor: pointer;
+      }
+      .oe_searchview_facets2 {
+        border-bottom: 1px solid #757575;
+        padding-bottom: 3px;
+        margin-bottom: 10px;
+        width:100%
+      }
+      .oe_searchview_facets {
+        min-height: 22px;
+        margin: 0px 35px 0px 0;
+      }
+      .oe_searchview_facets .oe_searchview_facet {
+        position: relative;
+        cursor: pointer;
+        padding: 0;
+        -webkit-font-smoothing: auto;
+        margin: 3px 0;
+        font-size: 11px;
+     }
+     .oe_tag {
+        border: 1px solid #afafb6;
+        font-size: 11px;
+        padding: 2px 4px;
+        margin: 0 2px 2px 0;
+        -moz-border-radius: 3px;
+        -webkit-border-radius: 3px;
+        border-radius: 3px;
+        background: #f0f0fa;
+        color: #4c4c4c;
+      }
+      .oe_searchview_facets .oe_searchview_facet .oe_facet_value {
+        padding: 0 4px;
+      }
+      .oe_searchview_facets .oe_searchview_facet .oe_facet_value:last-child {
+        padding-right: 16px;
+      }
+      .dropdown-cont .select2-choice[disabled], select[disabled] {
+        border-bottom: 1px dashed #757575;
+      }
+
+      paper-input-decorator::shadow .error-icon {
+        display: none;
+      }
+
+      .dropdown-cont a[required] {
+        border-bottom-color:#d34336;
+      }
+</style>
+<link rel="stylesheet" href="css/select2.css">
+
+  <div flex style="margin: 8px 0 0">
+      <template if="{{editing}}">
+      <template if="{{label.length > 0}}">
+        <div class="floated-label" aria-hidden="true">
+          <span id="floatedLabelText" class="label-text">[[label]]</span>
+        </div>
+      </template>
+        <template if="{{type=='list'}}">
+          <paper-input-decorator>
+            <input is="core-input" type="text" value="{{value}}" on-change="{{onChangedList}}" id="[[id]]" list="asset" class="select2-input" isInvalid="{{isinvalid}}">
+          </paper-input-decorator>
+          <datalist id="asset">
+            <option template repeat="{{o in options}}" value="{{bindId(o)}}">
+              {{bindValue(o)}}
+            </option>
+          </datalist>
+        </template>
+        <!-- string -->
+        <template if="{{ type=='RS' }}">
+          <div class="dropdown-cont" style="{{style1}}">
+            <template if="{{!restrict}}">
+              <div class="select2-search" tabindex="0" >
+                <paper-input-decorator label="хайх">
+                  <input is="core-input" type="text" placeholder="Хайх" value="{{selectedVal}}" title="{{selectedVal}}" on-keyup="{{keyUp}}" on-focus="{{ inputFocus }}" on-blur="{{ inputBlur }}" on-keydown = "{{keyDown}}"  id="[[id]]" class="select2-input"  isInvalid="{{isinvalid}}">
+                </paper-input-decorator>
+                <template if="{{ inputHasFocus }}">
+                  <div id="selectdrop" class="{{ { 'autocomplete-content-visible': inputHasFocus, 'autocomplete-content-hidden': !(inputHasFocus), 'drop-below':true } }}">
+                    <template repeat="{{o in datalist.rs}}">
+                      <div on-mouseover="{{mouseOver}}" on-mousedown="{{cancelEvent}}" on-mouseup="{{locateAndSet}}" class="li-result" id="{{bindId(o)}}">{{bindValue(o)}}</div>
+                    </template>
+                    <template if="{{ datalist.rs.length == 0 }}">
+                        <div class="no-result">Илэрцгүй</div>
+                    </template>
+                  </div>
+                </template>
+              </div>
+            </template>
+            <template if="{{restrict}}">
+              <div class="dropdown-cont" >
+                <a href="javascript:void(0)" on-mouseup="{{showOptions}}" on-mousedown="{{cancelEvent}}"  class="select2-choice" disabled?="{{disable}}" required?="{{ required && selectedVal == ''}}">
+                  <span class="select2-chosen" >{{selectedVal}}</span>
+                  <abbr class="select2-search-choice-close"></abbr>
+                  <span class="select2-arrow" role="presentation">
+                    <b class="select2-arrow" role="presentation"></b>
+                  </span>
+                </a>
+                <template if="{{isListVal}}">
+                  <div class="oe_searchview_facets">
+                    <template repeat="{{f in value}}">
+                      <div class="oe_tag oe_tag_dark oe_searchview_facet" tabindex="0">
+                        <span id="{{f['id']}}" on-click="{{removeVal}}" class="oe_facet_remove">x</span>
+                        <span class="oe_facet_values">
+                          <span class="oe_facet_value">{{f["name"]}}</span>
+                        </span>
+                      </div>
+                    </template>
+                  </div>
+                </template>
+                <template if="{{!disable}}">
+                  <div class="select-dropdown" >
+                    <div id="selectdrop" class="{{ { 'autocomplete-content-visible': inputHasFocus, 'autocomplete-content-hidden': !(inputHasFocus), 'drop-below':enoughRoomBelow, 'drop-above':!(enoughRoomBelow) } }}">
+                        <input is="core-input" type="text" autofocus on-focus="{{inputFocus}}" on-keyup="{{keyUp}}" on-blur="{{ inputBlur }}" on-keydown="{{keyDown}}" style="padding:2px; width:99%;border-bottom:1px solid #aaa" placeholder="Хайх..." class="select2-input" tabindex="1">
+                      <div class="options">
+                        <template repeat="{{o in datalist.rs}}">
+                          <div on-mouseover="{{mouseOver}}" on-mousedown="{{cancelEvent}}" on-mouseup="{{locateAndSet}}" class="li-result" id="{{bindId(o)}}">{{bindValue(o)}}</div>
+                        </template>
+                        <template if="{{ datalist.rs.length == 0 }}">
+                            <div class="no-result">Илэрцгүй</div>
+                        </template>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+               </div>
+                </template>
+                <!--<input style="display:none" value="{{value}}"/>-->
+          </div>
+
+          <!--<select value="{{ value }}" class="form-control" id="[[ id ]]"
+            on-change="{{onChanged}}">
+            <option></option>
+            <option template repeat="{{o in options}}" value="{{ bindId(o) }}">
+              {{ bindValue(o) }}
+            </option>
+            </select>-->
+
+        </template>
+
+        <template if="{{ type == 'Select' }}">
+            <select value="{{ bindId(value) }}" id="[[ id ]]"
+              on-change="{{onChanged}}" style="{{style1}}" required?="{{required}}"
+              title="{{selectTitle}}" placeHolder="{{placeHolder}}" disabled?="{{disable}}">
+              <option></option>
+              <option template repeat="{{o in options}}" value="{{ bindId(o) }}">
+                {{ bindValue(o) }}
+              </option>
+            </select>
+        </template>
+      </template>
+      <template if="{{!editing}}">
+        <template if="{{ type == 'Select' }}">
+          <paper-input-decorator floatingLabel label="[[label]]"  isInvalid="{{isinvalid}}">
+            <input is="core-input" type="text" value="{{value}}" readonly style="{{style2}}">
+          </paper-input-decorator>
+        </template>
+
+        <!-- map -->
+        <template if="{{ type == 'RS' }}">
+            <template if="{{!isListVal}}">
+              <paper-input-decorator floatingLabel label="[[label]]" isInvalid="{{isinvalid}}">
+                <input is="core-input" type="text" value="{{ selectedVal }}" readonly style="{{style2}}" placeholder="[[label]]">
+              </paper-input-decorator>
+            </template>
+            <template if="{{isListVal}}">
+              <div class="floated-label" aria-hidden="true">
+                <span id="floatedLabelText" class="label-text">[[label]]</span>
+              </div>
+              <div class="oe_searchview_facets oe_searchview_facets2">
+                <template repeat="{{f in value}}">
+                  <div class="oe_tag oe_tag_dark oe_searchview_facet" tabindex="0">
+                    <span class="oe_facet_values">
+                      <span class="oe_facet_value">{{f["name"]}}</span>
+                    </span>
+                  </div>
+                </template>
+              </div>
+            </template>
+        </template>
+      </template>
+  </div>
+</template>
+
+
+<script>
+@CustomTag("x-select")
+class XSelect extends PolymerElement {
+  @published String name = "";
+  @published String label = '';
+  @published var value;
+  @published String type = 'Select'; // value type: string, Map etc.
+  @published RecordSet datalist;
+  @published bool restrict = true;//заавал сонголтоос сонгох үед
+  @published String optVis = 'visible';
+  @published List options;//статик үед
+  @published List displayFields;//хэрэглэгчид харагдах талбар
+  @published List keyFields; //onchange, баазад хадгалагдах талбар
+  @published String noResultVis = 'none';
+  @published bool editing = false;
+  @published var selectedVal = '';
+  @published bool required = false;
+  @published String placeHolder = "";
+  @published String selectTitle = "";
+  @published String style1 = ""; // select ийн style
+  @published String style2 = ""; // p ийн style
+  @published bool disable = false;
+  @published bool multi = false;
+  @published bool list = false;
+  @published bool isinvalid = false;
+
+  @observable String id = new DateTime.now().millisecondsSinceEpoch.toString();
+  @observable bool isListVal = false;//олон утга сонгох
+  @observable bool inputHasFocus = false;
+  @observable bool hasSearched = false;
+  @observable bool enoughRoomBelow = true;
+
+
+  final int listLimit = 10;
+  Element mostParent;
+  InputElement _input;
+
+  static const TIMEOUT = const Duration(milliseconds: 10);
+  static var duration = TIMEOUT;
+
+  XSelect.created() : super.created();
+
+  multiChanged() {
+    isListVal = multi;
+  }
+
+  ready() {
+
+    options = firstNonNull(options, []);
+    // төрлийг автоматаар таних
+    if (type == '' && options.isNotEmpty) {
+      type = 'Select';
+    }
+    //Олон утга авч болох эсэхийг шалгах
+    if (value is List) {
+      isListVal = true;
+    }
+    list ? type = "list" : '';
+  }
+
+  domReady() {
+    if (type == 'RS') {
+      _input = shadowRoot.querySelector(".select2-input");
+//      if (_input != null) {
+//        _input.onFocus.listen((e) => inputFocus(null, null, null));
+//        _input.onBlur.listen((e) => inputBlur(null, null, null));
+//      }
+    }
+    if (value is List) {
+      isListVal = true;
+    }
+  }
+  valueChanged() {
+
+    Element ael = shadowRoot.querySelector('.select2-choice');
+    if (required && (value != '' || value != null) && ael != null) {
+      ael.attributes.remove('required');
+    }
+
+    PaperInputDecorator el = shadowRoot.querySelector('paper-input-decorator');
+    if (el != null) {
+      el.updateLabelVisibility(value.toString());
+    }
+    Function eq = const DeepCollectionEquality.unordered().equals;
+    if (displayFields != null && keyFields != null && eq(displayFields, keyFields)) {
+      selectedVal = value;
+    } else if (type == 'RS' && !(value is List) && value != null && !selectedVal.contains(value) && datalist != null) {
+      datalist.filter[keyFields.elementAt(0)] = value;
+      //datalist.limit = 20;
+      if (datalist.context != null) {
+        datalist.q.clear();
+        datalist.find().then((_) {
+          Map rs = datalist.rs.firstWhere((item) => item.containsKey(value) || item.containsValue(value));
+          selectedVal = bindValue(rs);
+          datalist.filter.remove(keyFields.elementAt(0));
+        }).catchError((e) {
+          //window.alert("Өгөгдөл хайхад алдаа гарлаа! ${e}");
+        });
+      }
+    } else if (value == null || value == "") {
+      selectedVal = '';
+    }
+
+
+    if (required) {
+      isinvalid = (value == '' || value == null);
+    } else {
+      isinvalid = false;
+    }
+  }
+
+  datalistChanged() {
+    if (datalist != null) {
+      datalist.limit == 0 ? datalist.limit = 50 : datalist.limit = datalist.limit;
+      datalist.limit == 25 ? datalist.limit = 50 : datalist.limit = datalist.limit;
+      type = 'RS';
+      if (datalist.name == "Ажилтан") {
+        (!datalist.project.contains('нэгж') && datalist.project.isNotEmpty) ? datalist.project.add('нэгж') : '';
+        if (datalist.rs != null) {
+          Map m = datalist.rs.firstWhere((i) => i.containsKey('нэгж'), orElse: () => null);
+          if (m == null) {
+            datalist.rs.clear();
+            datalist.find();
+          }
+        }
+      }
+    }
+  }
+
+  //List-с сонгогдсон утгыг устгах
+  removeVal(Event e, var detail, SpanElement target) {
+    value.removeWhere((item) => item["id"] == target.id);
+    value = toObservable(value);
+  }
+
+  cancelEvent(Event e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  //Тодруулагчийг хөдөлгөх
+  moveHighlight(int delta) {
+    List<LIElement> l = shadowRoot.querySelectorAll('.li-result');
+    if (shadowRoot.querySelector('.li-highlighted') == null) {
+      l.elementAt(0).classes.add('li-highlighted');
+    } else {
+      int index = l.indexOf(l.firstWhere((item) => item.classes.contains('li-highlighted')));
+      l.elementAt(index).classes.remove('li-highlighted');
+      index += delta;
+      if (index > l.length - 1) {
+        index = 0;
+      } else if (index < 0) {
+        index = l.length - 1;
+      }
+      l.elementAt(index).classes.add('li-highlighted');
+      l.elementAt(index).scrollIntoView();
+    }
+  }
+  //Сонголт харуулах
+  showOptions(Event e, var detail, Node target) {
+    if (!inputHasFocus) {
+      _input = shadowRoot.querySelector(".select2-input");
+      fire("focus", detail: null, onNode: _input);
+
+      //dropdown зурагдаж дууссаны дараа cursor-ийг input дотор байрлуулах
+      Duration duration = new Duration(milliseconds: 150);
+      Timer timer = new Timer(duration, () => _input.focus());
+    } else {
+      fire("blur", detail: null, onNode: _input);
+    }
+  }
+  inputHasFocusChanged() {
+//    if (inputHasFocus) {
+//      DivElement drop = shadowRoot.querySelector("#selectdrop");
+//      var offset = drop.offset;
+//      var height = drop.offsetHeight;
+//      var width = drop.offsetWidth;
+//      var windowWidth = document.documentElement.clientWidth;
+//      var windowHeight = document.documentElement.clientHeight;
+//      var viewPortRight = document.documentElement.scrollLeft + windowWidth;
+//      var viewportBottom = document.documentElement.scrollTop + windowHeight;
+//      var dropTop = drop.borderEdge.top + height;
+//      var dropLeft = offset.left;
+//      enoughRoomBelow = toObservable(dropTop + height <= viewportBottom);
+//
+//    }
+  }
+  //Сонгогдсон утгыг авах
+  locateAndSet() {
+    DivElement li = (shadowRoot.querySelector('.li-highlighted') as DivElement);
+    if (li != null) {
+      if (isListVal) {
+        value == null ? value = toObservable([]) : null;
+        Map val = {
+          "id": li.id,
+          "name": li.innerHtml.trim()
+        };
+        if (value.length == listLimit) {
+          value.removeLast();
+        }
+        value.add(val);
+      } else {
+        selectedVal = li.innerHtml.trim();
+        value = li.id;
+        onChangedInp(li.id);
+      }
+    } else if (restrict == false) {
+      onChangedInp(selectedVal);
+    }
+    hideOptions();
+  }
+  hideOptions() {
+    _input = shadowRoot.querySelector(".select2-input");
+    fire("blur", detail: null, onNode: _input);
+    _input.blur();
+  }
+
+  //Сонголтууд дээр заагч очиход тодруулах
+  mouseOver(Event e, var detail, DivElement target) {
+    if (shadowRoot.querySelector('.li-highlighted') != null) {
+      shadowRoot.querySelector('.li-highlighted').classes.remove('li-highlighted');
+    }
+    target.classes.add('li-highlighted');
+  }
+
+  //
+  keyDown(Event e, var detail, Node target) {
+    KeyboardEvent ke = (e as KeyboardEvent);
+    switch (ke.which) {
+      case KeyCode.TAB:
+        break;
+      case KeyCode.UP:
+      case KeyCode.DOWN:
+        cancelEvent(e);
+        moveHighlight((ke.which == 38) ? -1 : 1);
+        break;
+      default:
+        break;
+    }
+  }
+
+  mouseDown(Event event, var detail, Node target) {
+    // preventing from input blur.
+    event.preventDefault();
+  }
+
+  //Хэрэглэгчээс оруулсан утгаар хайх
+  keyUp(Event e, var detail, InputElement target) {
+    KeyboardEvent ke = (e as KeyboardEvent);
+    int keyCode = 0;
+    String ch = new String.fromCharCode(ke.which);
+    RegExp regexp = new RegExp(r'^[a-zA-Za-яA-Я\d]');
+    Iterable<Match> matches = regexp.allMatches(ch);
+    keyCode = ke.which;
+    if (matches.length > 0) {
+      keyCode = 999;
+    }
+    switch (keyCode) {
+      case KeyCode.ENTER:
+        locateAndSet();
+        break;
+      case KeyCode.BACKSPACE:
+      case KeyCode.DELETE:
+      case 999:
+        String val = target.value;
+        noResultVis = 'none';
+        _input.classes.add('select2-active');
+        datalist.filter[r'$or'] = [{
+            "_id": {
+              r'$regex': val + '.*',
+              r'$options': 'i'
+            }
+          }, {
+            "нэр": {
+              r'$regex': val + '.*',
+              r'$options': 'i'
+            }
+          }];
+        if (datalist.context != null) {
+          datalist.q.clear();
+          datalist.filter.remove(keyFields.elementAt(0));
+          datalist.find().then((resp) {
+            _input.classes.remove('select2-active');
+            if (!restrict) {
+              value = selectedVal;
+            }
+          }).catchError((e) {
+            window.alert("Өгөгдөл хайхад алдаа гарлаа! ${e}");
+          });
+        }
+        break;
+      default:
+        break;
+    }
+    if (datalist.rs.length == 0) {
+      _input.classes.remove('select2-active');
+    }
+  }
+  onChangedInp(String val) {
+    String opt = val;
+    if (type == 'Map') {
+      String id = opt;
+      for (Map o in options) {
+        if (o['_id'] == id) {
+          value = toObservable(o);
+          break;
+        }
+      }
+    } else {
+      value = opt;
+    }
+    fire("change", detail: value);
+  }
+  onChanged(Event e, var detail, SelectElement target) {
+    OptionElement opt = target.options[target.selectedIndex];
+    if (type == 'Map') {
+      String id = opt.value.trim();
+      for (Map o in options) {
+        if (o['_id'] == id) {
+          value = toObservable(o);
+          break;
+        }
+      }
+    } else {
+      value = opt.value.trim();
+    }
+    fire("change", detail: value);
+  }
+
+  onChangedList(Event e, var detail, InputElement target) {
+    fire("change", detail: detail);
+  }
+
+  bindId(var v) {
+    String key = '';
+    if (v is Map) {
+      if (keyFields != null) {
+        key = v[keyFields.elementAt(0)].toString();
+        for (var field in keyFields.skip(1)) {
+          key += '-' + v[field].toString();
+        }
+        return key;
+      }
+      return v['_id'];
+    }
+    return v.toString();
+  }
+
+  bindValue(var v) {
+    String dispField = '';
+    if (v is Map) {
+      if (displayFields != null) {
+        dispField = v[displayFields.elementAt(0)].toString();
+//        if (datalist != null && datalist.name == "Ажилтан") {
+//          dispField += '-' + (v.containsKey("нэгж") ? v["нэгж"] : '');
+//          dispField += '-' + (v.containsKey("ат") ? v["ат"] : '');
+//          dispField += '-' + (v.containsKey("эцэг") ? v["эцэг"].toString().substring(0,1) : '');
+//        }
+        for (var field in displayFields.skip(1)) {
+          dispField += '-' + (v.containsKey(field) ? v[field].toString() : '');
+        }
+        return dispField;
+      }
+      if (v['_id'] != v['нэр']) {
+        return "${v['_id']} - ${v['нэр']} ";
+      } else {
+        return v['_id'];
+      }
+    }
+    return v;
+  }
+  inputFocus(Event e, var detail, Node target) {
+    if (datalist.rs == null || datalist.rs.length == 0) {
+      datalist.find();
+    }
+    inputHasFocus = true;
+  }
+
+  inputBlur(Event e, var detail, Node target) {
+    inputHasFocus = false;
+  }
+}
+</script>
+</dom-module>

@@ -1,0 +1,23 @@
+// ===============================
+// Component Style
+// Component name: br-selectbox
+// ===============================
+
+@import '../../bedrock/scss/variables';
+@import 'variables';
+
+:host {
+  position: relative;
+  display: block;
+  user-select: none;
+}
+
+.search {
+  padding: 0 1rem;
+  flex-grow: 0;
+
+  &:hover,
+  &:focus {
+    background-color: #fff;
+  }
+}

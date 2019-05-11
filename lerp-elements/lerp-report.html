@@ -1,0 +1,83 @@
+<meta charset="utf-8">
+
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../core_elements/core_ajax_dart.html">
+<link rel="import" href="../core_elements/core_toolbar.html">
+<link rel="import" href="../core_elements/core_icon_button.html">
+<link rel="import" href="../paper_elements/paper_spinner.html">
+
+<link rel="import" href="icons.html">
+<link rel="import" href="core.html">
+<link rel="import" href="x-form.html">
+
+<dom-module id="mongo-js" hidden>
+<template>
+
+  <!-- FIXME: тайлангийн файлууд заавал report хавтаст байх хэрэгтэй юу ? -->
+  <core-ajax-dart id="config" url="report/{{src}}" auto
+      on-core-response="{{fileResponse}}"
+      on-core-error="{{fileError}}">
+  </core-ajax-dart>
+
+  <content></content>
+</template>
+</dom-module>
+
+<!-- x-report -->
+<dom-module id="x-report">
+<template>
+</template>
+</dom-module>
+
+
+
+
+<!-- report-viewer -->
+<dom-module id="report-viewer">
+<style>
+  core-toolbar {
+    background: #FFF url('sug1.png') right bottom no-repeat;
+    border-bottom: 1px solid #ccc;
+  }
+  @media print {
+    core-toolbar{
+      display: none;
+    }
+  }
+</style>
+
+<template>
+
+  <!-- TODO: print үед нуух -->
+  <core-toolbar>
+    <div>Тайлан:</div>
+
+    <div flex>
+    <select class="form-control" value="{{current}}">
+      <option></option>
+      <option template repeat="{{ o in reports }}" value="{{o|optId}}">{{ o|optValue }}</option>
+    </select>
+    </div>
+
+    <!-- тайлан бүр өөртөө toolbar-тай болсон учир хасав.
+    <core-icon-button icon="erp-icons:play" on-tap="{{run}}"></core-icon-button>
+    <core-icon-button icon="erp-icons:print" on-tap="{{print}}"></core-icon-button>
+    <excel-button>Export</excel-button>
+    -->
+
+  </core-toolbar>
+
+   <template if="{{ rpt.running }}">
+    <paper-spinner active></paper-spinner>
+   </template>
+
+    <!-- тайлан харуулах хэсэг -->
+    <div id="output">
+    </div>
+
+</template>
+
+</dom-module>
+
+
+<script type="application/dart" src="x-report.dart"></script>

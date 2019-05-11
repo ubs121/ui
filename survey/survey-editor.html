@@ -1,0 +1,163 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+<link rel="import" href="../iron-input/iron-input.html">
+<link rel="import" href="../iron-autogrow-textarea/iron-autogrow-textarea.html">
+
+<dom-module id="survey-editor">
+  <style>
+  input {
+    width: 100%;
+  }
+  </style>
+<template>
+  <div>
+    <label for="name">Name:</label>
+    <input is="iron-input" id="name" bind-value="{{data.name}}" autofocus required>
+  </div>
+
+  <br/>
+
+  <p>Quiz list:</p>
+  <hr/>
+  <template is="dom-repeat" items="{{data.questions}}">
+    <survey-quiz data="{{item}}"></survey-quiz>
+  </template>
+
+  <br/>
+
+  <div>
+    <template is="dom-if" if="{{!data.active}}">
+      <button on-click="addQuiz">Add quiz</button>
+    </template>
+  </div>
+
+  <div>
+    <button on-click="startStop">{{startStopLabel}} survey</button>
+    <a href="{{data.link}}" target="_blank">{{data.link}}</a>
+  </div>
+
+  <iron-ajax
+    auto
+    url="[[dataUrl]]"
+    params="{{data}}"
+    handle-as="json"
+    on-response="dataLoaded"
+    debounce-duration="300"></iron-ajax>
+
+</template>
+
+<script>
+(function() {
+    'use strict';
+
+    Polymer({
+      is: 'survey-editor',
+
+      properties: {
+        dataUrl: { type: String, value: ""},
+        /*
+        name - Name
+        active - Survey status
+        suffle - Shuffle questions
+        notes - Notes
+        questions - List of questions
+        */
+        data: {
+          type: Object,
+          value: function() {
+            return {}
+          },
+          observer: "_dataChanged",
+          notify: true
+        },
+        startStopLabel: {type: String, value: "Start"}
+      },
+
+      addQuiz: function(e) {
+        this.push('data.questions', {"quiz": "new", "type": "one"});
+        //this.notifyPath('data.questions', this.data.questions);
+      },
+
+      save: function(e) {
+        JSON.stringify(data);
+
+        // TODO: post data to the dataUrl if available
+      },
+
+      dataLoaded: function(e) {
+        if (e.detail.response) {
+          this.data = e.detail.response;
+        } else {
+          console.log("Failed to load " + this.dataUrl);
+        }
+      },
+
+      _dataChanged: function(e) {
+        //console.log(this.data);
+      },
+
+      startStop: function(e) {
+
+        if (this.data.active) {
+          this.data.link = "";
+          this.data.active = false;
+          this.startStopLabel = "Start";
+        } else {
+          // TODO: generate survey URL
+          this.data.link = this.dataUrl;
+          this.data.active = true;
+          this.startStopLabel = "Stop";
+        }
+
+        this.notifyPath('data.link', this.data.link);
+        this.notifyPath('data.active', this.data.active);
+
+      },
+    });
+
+  })();
+</script>
+
+</dom-module>
+
+
+<dom-module id="survey-quiz">
+  <template>
+    <div>
+
+      <p>Quiz:
+        <select bind-value="{{data.type}}" value="[[data.type]]">
+          <option value="one">Нэг сонголттой</option>
+          <option value="many">Олон сонголттой</option>
+          <option value="fill">Бөглөх</option>
+          <option value="rating">Үнэлэх</option>
+      </select></p>
+
+      <iron-autogrow-textarea bind-value="{{data.quiz}}" rows="3" max-rows="5">
+      </iron-autogrow-textarea>
+
+    </div>
+
+  </template>
+
+  <script>
+  (function() {
+      'use strict';
+
+      Polymer({
+        is: 'survey-quiz',
+
+        properties: {
+          data: {
+            type: Object,
+            value: function() {
+              return {}
+            },
+            notify: true
+          }
+        },
+      });
+
+  })();
+  </script>
+</dom-module>

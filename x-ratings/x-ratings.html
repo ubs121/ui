@@ -1,0 +1,42 @@
+<link rel="import" href="../polymer/polymer.html">
+
+<dom-module id="x-ratings">
+
+<style>
+  :host {
+    display: inline-block;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  #star {
+    display: inline-block;
+    vertical-align: middle;
+    width: 24px;
+    height: 24px;
+    background-size: 100% 100%;
+    background-image: url('ic_star_rate_darkalt.png');
+    cursor: pointer;
+  }
+
+  #star.full {
+    background-image: url('ic_star_rate_darkreg.png');
+  }
+  .label-text {font-size: 12px; color: #4285f4}
+</style>
+
+<template>
+      <div class="floated-label" aria-hidden="true">
+        <span id="floatedLabelText" class="label-text">[[label]]</span>
+      </div>
+
+      <template is="dom-repeat" items="{{stars}}" as="star">
+        <span id="star" index$="{{star.index}}" class$="{{star.class}}"
+          on-tap="updateValue"></span>
+      </template>
+
+</template>
+
+<script src="x-ratings.js"></script>
+
+</dom-module>

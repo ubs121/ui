@@ -1,0 +1,211 @@
+<!-- x-file : video, image, file etc  -->
+<polymer-element name="x-upload">
+<template>
+  <style>
+    :host {
+      display: block;
+      height: 100%;
+    }
+
+    .label-text {font-size: 12px; color: #4285f4}
+
+  </style>
+
+  <div flex style="margin: 5px 0">
+
+    <template if="{{label.length > 0}}">
+      <div class="floated-label" aria-hidden="true">
+        <span id="floatedLabelText" class="label-text">[[label]]</span>
+      </div>
+    </template>
+
+    <!-- hidden input -->
+    <input id="select"
+        style="display:none"
+        type="file"
+        on-change="{{change}}"/>
+
+    <!-- зураг -->
+    <template if="{{ type.startsWith('image') }}">
+      <a _href="{{baseUrl}}/{{value}}" target="_blank">
+        <img _src="{{baseUrl}}/{{value}}"
+            class="img-thumbnail"
+            style="width:100px;cursor:pointer; border: 1px solid #eee;border-radius: 5px;"
+            id="[[ id ]]"
+            alt="[[ value ]]"/>
+      </a>
+    </template>
+
+    <!-- видео -->
+    <template if="{{ type.startsWith('video') }}">
+      <video id="[[id]]" width="320" height="240" controls style="border: 1px solid #eee; border-radius: 5px;">
+        <source _src="{{baseUrl}}/{{value}}" _type="{{type}}"/>
+        <p>Таны браузер энэ видеог харуулж чадахгүй байна</p>
+      </video>
+    </template>
+
+    <!-- бусад -->
+    <template if="{{ type=='' }}">
+      <!-- TODO: татах боломжгүй сонголт нэмэх -->
+      <a _href="{{baseUrl}}/{{value}}" target="_blank" >{{value}}</a>
+    </template>
+
+    <!-- Файл сонгох товч -->
+    <template if="{{editing}}">
+      <core-icon-button icon="file-upload" title="Сонгох" on-click="{{fileClick}}">Сонгох</core-icon-button>
+    </template>
+  </div>
+
+</template>
+</polymer-element>
+
+
+
+
+
+
+/**
+ *  Файл, зураг, видео
+ *
+ *  FIXME: дэд хавтас дэмжих боломжгүй байна !!!
+ */
+@CustomTag("x-file")
+class XFile extends PolymerElement {
+  @published
+  UserContext context;
+
+  @published
+  String label = ''; // label
+
+  @published
+  String value = ''; // path
+
+  @published
+  String type = ''; // image, video, ...
+
+  @published
+  String scheme = ''; // http:, file:
+
+  @observable
+  String baseUrl = '/res'; // серверийн файл хадгалах зам
+
+  Uint8List binaryData;
+
+  @published
+  bool editing = false;
+
+  @published
+  bool isinvalid = false;
+
+  @published
+  bool required = false;
+
+  @observable
+  String id = new DateTime.now().millisecondsSinceEpoch.toString(); // internal id
+
+  XFile.created() : super.created() {
+
+  }
+
+  contextChanged() {
+    if (context != null) {
+      baseUrl = "${context.fileServer}";
+    }
+  }
+
+  requiredChanged() {
+    isinvalid = (required && (value == null || value == ""));
+  }
+
+  valueChanged() {
+
+    isinvalid = (required && (value == null || value == ""));
+
+    if (value == null) {
+      return;
+    }
+
+    if (value.startsWith("http")) {
+      scheme = "http";
+    }
+
+//    if (type == '') { // төрөл байхгүй бол автоматаар таних
+
+      if (value.toLowerCase().endsWith(".jpg") || value.toLowerCase().endsWith(".jpeg") || value.toLowerCase().endsWith(".webp") || value.toLowerCase().endsWith(".gif")) {
+        type = "image/jpeg";
+      } else if (value.toLowerCase().endsWith(".png")) {
+        type = "image/png";
+      } else if (value.toLowerCase().endsWith(".webp")) {
+        type = "image/webp";
+      } else if (value.toLowerCase().endsWith(".gif")) {
+        type = "image/gif";
+      } else if (value.toLowerCase().endsWith(".mp4") || value.toLowerCase().endsWith(".avi")) {
+        type = "video/mp4";
+      } else if (value.toLowerCase().endsWith(".webm")) {
+        type = "video/webm";
+      } else if (value.toLowerCase().endsWith(".ogg")) {
+        type = "video/ogg";
+      } else {
+        type = "";
+      }
+
+//    }
+  }
+
+  fileClick(Event e, var detail, Node target) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (editing) {
+      InputElement fileSelect = $["select"];
+
+      // TODO: файл диалоги дээр төрлийг ингэж хатуу заах хэрэгтэй юу ?
+      if (type.startsWith('image')) {
+        fileSelect.accept = "image/*";
+      } else if (type.startsWith('video')) {
+        fileSelect.accept = "image/*";
+      } else {
+        fileSelect.accept = "";
+      }
+
+      fileSelect.click();
+    }
+  }
+
+  // зураг солих
+  change(Event e, var detail, InputElement target) {
+    e.preventDefault();
+    e.stopPropagation();
+
+
+
+    InputElement inpFile = e.target;
+    FileReader reader = new FileReader();
+    reader.onLoad.listen((e1) {
+      binaryData = reader.result;
+      value = inpFile.files.first.name;
+
+      // FIXME: сервер рүү шууд хадгалах нь зөв үү ?
+      context.uploadFile(value, binaryData).then((fileName) {
+        if (value != fileName) {
+          value = fileName;
+        }
+        print("${fileName} file created.");
+      }).catchError((error) {
+        print(error);
+      });
+    });
+
+    if (inpFile.files.length > 0) {
+      reader.readAsArrayBuffer(inpFile.files.first);
+    }
+  }
+
+  fileResponse(Event e, var detail, Node target) {
+    fire("change", detail: value);
+  }
+
+  fileError(Event e, var detail, Node target) {
+    window.alert("Файл хадгалахад алдаа гарлаа ! ${detail}");
+  }
+}

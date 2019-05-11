@@ -1,0 +1,33 @@
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>Lerp Demo</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../lerp-context.html">
+  </head>
+  <body>
+
+    <p>Lerp demo</p>
+
+    <lerp-context uri="http://192.168.8.46:8080" token="123"></lerp-context>
+
+    <script>
+      var myEl = document.querySelector('lerp-context');
+
+      console.log("lerp uri: " + myEl.uri);
+      console.log("lerp token: " + myEl.token);
+
+      myEl.validate().then(function(res) {
+        console.log("validate success: " + myEl.state);
+      }, function(err) {
+        console.log("validate error: " + myEl.state);
+      });
+
+
+    </script>
+
+  </body>
+</html>
